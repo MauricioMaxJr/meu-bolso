@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Meu Bolso</title>
+<meta name="description" content="App pessoal de finanças: salário, custos, metas e recomendações.">
+<meta name="theme-color" content="#17548a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meu Bolso">
+<link rel="stylesheet" href="app.css?v=6">
+</head>
+<body>
+
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><span class="brand-logo" data-ic="wallet"></span><span>Meu Bolso</span></div>
+  <nav class="nav-lateral">
+    <button data-tela="inicio" data-ic="layout-dashboard" class="ativo">Início</button>
+    <button data-tela="renda" data-ic="briefcase">Renda</button>
+    <button data-tela="custos" data-ic="receipt">Custos</button>
+    <button data-tela="metas" data-ic="target">Metas</button>
+    <button data-tela="contas" data-ic="banknote">Contas</button>
+    <button data-tela="relatorios" data-ic="chart-column">Relatórios</button>
+    <button data-tela="dicas" data-ic="lightbulb">Dicas</button>
+    <button data-tela="config" data-ic="settings">Configurações</button>
+  </nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<div class="conteudo">
+  <header class="topbar">
+    <button id="btn-menu" class="icon-btn btn-menu" aria-label="Abrir menu" data-ic="menu"></button>
+    <span class="titulo-tela" id="titulo-tela">Início</span>
+    <div class="mes-nav">
+      <button id="mes-prev" class="icon-btn" aria-label="Mês anterior" data-ic="chevron-left"></button>
+      <span id="mes-label"></span>
+      <button id="mes-next" class="icon-btn" aria-label="Próximo mês" data-ic="chevron-right"></button>
+    </div>
+    <span id="mes-status" class="badge"></span>
+    <button id="btn-tema" class="icon-btn" title="Modo claro/escuro"></button>
+  </header>
+
+  <main id="main">
+    <!-- ================= INÍCIO ================= -->
+    <section id="tela-inicio" class="tela">
+      <div id="painel-onboarding"></div>
+      <div class="cards" id="cards-resumo"></div>
+      <div id="painel-recomendacao" class="panel"></div>
+      <div id="painel-contas" class="panel"></div>
+      <div id="painel-metas-mini" class="panel"></div>
+      <div id="painel-dicas-mini" class="panel"></div>
+      <div class="gravar-area" id="gravar-area"></div>
+    </section>
+
+    <!-- ================= RENDA ================= -->
+    <section id="tela-renda" class="tela" hidden>
+      <div class="panel">
+        <h2 data-ic="briefcase">Salário do mês</h2>
+        <div class="form-grid" id="form-salario">
+          <label>Base salarial
+            <select id="sal-base">
+              <option value="10000">R$ 10.000 - até 2 anos</option>
+              <option value="12000">R$ 12.000 - 2 a 4 anos</option>
+              <option value="14000">R$ 14.000 - 4 a 6 anos</option>
+              <option value="16000">R$ 16.000 - 6 anos ou +</option>
+            </select>
+          </label>
+          <label>% da meta
+            <input type="number" id="sal-pct" min="0" max="200" step="1">
+          </label>
+        </div>
+        <div id="sal-resumo" class="sal-resumo"></div>
+        <div class="btn-row" id="sal-acao"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-ic="hand-coins">Outras rendas</h2>
+          <button class="btn primary" id="btn-add-renda">Adicionar</button>
+        </div>
+        <ul class="lista" id="lista-rendas"></ul>
+      </div>
+    </section>
+
+    <!-- ================= CUSTOS ================= -->
+    <section id="tela-custos" class="tela" hidden>
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-ic="repeat">Custos fixos</h2>
+          <button class="btn primary" id="btn-add-fixo">Adicionar</button>
+        </div>
+        <p class="soft">Entram sozinhos todo mês.</p>
+        <ul class="lista" id="lista-fixos"></ul>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-ic="receipt">Gastos avulsos</h2>
+          <button class="btn primary" id="btn-add-gasto">Adicionar</button>
+        </div>
+        <ul class="lista" id="lista-gastos"></ul>
+      </div>
+      <div class="panel">
+        <h2 data-ic="target">Orçamento por categoria</h2>
+        <div id="orcamentos"></div>
+      </div>
+    </section>
+
+    <!-- ================= METAS ================= -->
+    <section id="tela-metas" class="tela" hidden>
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-ic="award">Metas</h2>
+          <button class="btn primary" id="btn-add-meta">Nova meta</button>
+        </div>
+        <div id="lista-metas"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="piggy-bank">Aportes do mês</h2>
+        <p class="soft">Somam nas metas quando você grava o mês.</p>
+        <div id="aportes-mes"></div>
+      </div>
+    </section>
+
+    <!-- ================= CONTAS ================= -->
+    <section id="tela-contas" class="tela" hidden>
+      <div class="cards" id="contas-total"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-ic="banknote">Onde está seu dinheiro</h2>
+          <button class="btn primary" id="btn-add-conta">Adicionar</button>
+        </div>
+        <p class="soft">Saldo atual de cada conta, caixinha ou corretora. Atualize quando quiser.</p>
+        <div class="chips contas-grid" id="lista-contas"></div>
+      </div>
+    </section>
+
+    <!-- ================= RELATÓRIOS ================= -->
+    <section id="tela-relatorios" class="tela" hidden>
+      <div class="panel">
+        <h2 data-ic="chart-column">Renda × Custos por mês</h2>
+        <div id="chart-renda-custos"></div>
+        <details><summary>Ver como tabela</summary><div id="tabela-renda-custos" class="table-scroll"></div></details>
+      </div>
+      <div class="panel">
+        <h2 data-ic="receipt">Custos por categoria - <span id="chart-cat-mes"></span></h2>
+        <div id="chart-categorias"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="piggy-bank">Evolução do guardado</h2>
+        <p class="soft">Total nas metas (reserva + investimentos + demais) a cada mês gravado.</p>
+        <div id="chart-patrimonio"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="trending-up">Taxa de poupança</h2>
+        <div id="chart-poupanca"></div>
+      </div>
+      <div id="painel-anos"></div>
+    </section>
+
+    <!-- ================= DICAS ================= -->
+    <section id="tela-dicas" class="tela" hidden>
+      <div class="panel">
+        <h2 data-ic="lightbulb">Dicas do mês</h2>
+        <div id="lista-dicas"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="tv">Assinaturas</h2>
+        <div id="painel-assinaturas"></div>
+      </div>
+    </section>
+
+    <!-- ================= CONFIG ================= -->
+    <section id="tela-config" class="tela" hidden>
+      <div class="panel">
+        <h2 data-ic="compass">Motor de recomendação</h2>
+        <div class="form-grid">
+          <label>Mínimo a guardar (% da renda)
+          <input type="number" id="cfg-minimo" min="0" max="100" step="1"></label>
+          <label>% do prêmio (reserva incompleta)
+          <input type="number" id="cfg-premio1" min="0" max="100" step="1"></label>
+          <label>% do prêmio (reserva completa)
+          <input type="number" id="cfg-premio2" min="0" max="100" step="1"></label>
+          <label>Reserva (meses de essenciais)
+          <input type="number" id="cfg-reserva-meses" min="1" max="24" step="1"></label>
+          <label>Outros descontos da folha (R$)
+          <input type="number" id="cfg-desc-folha" min="0" step="0.01"></label>
+        </div>
+        <details class="como-funciona">
+          <summary>Como o cálculo funciona</summary>
+          <ol>
+            <li><strong>Piso</strong> = salário líquido sem prêmio (pior cenário).</li>
+            <li>Custos essenciais devem caber no piso.</li>
+            <li>Guardar o maior entre: % mínima da renda e % do que passar do piso.</li>
+            <li>Reserva de emergência vem antes das outras metas.</li>
+          </ol>
+        </details>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-ic="package">Categorias</h2>
+          <button class="btn primary" id="btn-add-cat">Nova categoria</button>
+        </div>
+        <div id="lista-categorias"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="download">Backup</h2>
+        <p class="soft">Dados só neste aparelho. Exporte para levar a outro.</p>
+        <div class="btn-row">
+          <button class="btn" id="btn-export">Exportar backup</button>
+          <button class="btn" id="btn-import">Importar backup</button>
+          <button class="btn" id="btn-csv">Exportar planilha (CSV)</button>
+          <input type="file" id="file-import" accept="application/json" hidden>
+          <button class="btn danger" id="btn-reset">Zerar tudo</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</div>
+
+<!-- ================= DIALOGS ================= -->
+<dialog id="dlg-item">
+  <form method="dialog" id="dlg-form">
+    <h3 id="dlg-titulo"></h3>
+    <div id="dlg-campos" class="form-grid"></div>
+    <div class="btn-row">
+      <button value="cancel" class="btn" formnovalidate>Cancelar</button>
+      <button value="ok" class="btn primary" id="dlg-ok">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="chart-tooltip" class="chart-tooltip" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="icons.js?v=6"></script>
+<script src="app.js?v=6"></script>
+</body>
+</html>
