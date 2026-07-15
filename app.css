@@ -28,8 +28,8 @@
   --info-text: #17548a;
   --good-bg: #e2f2e9;
   --good-text: #0b8043;
-  --radius: 10px;
-  --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 4px 14px rgba(20, 30, 50, .05);
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(20, 30, 50, .05), 0 8px 24px rgba(20, 30, 50, .07);
   /* ---- gráficos (paleta validada — não alterar sem revalidar) ---- */
   --s1: #2a78d6;
   --s6: #e34948;
@@ -57,7 +57,7 @@
   --info-text: #8fc0ea;
   --good-bg: #17332a;
   --good-text: #66c9a3;
-  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 10px 28px rgba(0, 0, 0, .4);
   --s1: #3987e5;
   --s6: #e66767;
   --chart-grid: #2c2c2a;
@@ -84,7 +84,7 @@
     --info-text: #8fc0ea;
     --good-bg: #17332a;
     --good-text: #66c9a3;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 10px 28px rgba(0, 0, 0, .4);
     --s1: #3987e5;
     --s6: #e66767;
     --chart-grid: #2c2c2a;
@@ -148,7 +148,7 @@ span.inline-ic { display: inline-flex; vertical-align: middle; }
   color: var(--text-soft); text-align: left;
   border-left: 3px solid transparent;
 }
-.nav-lateral button .ic { width: 18px; height: 18px; }
+.nav-lateral button .ic { width: 20px; height: 20px; }
 .nav-lateral button:hover { background: var(--strip); color: var(--text); }
 .nav-lateral button.ativo {
   background: var(--primary-soft); color: var(--primary);
@@ -198,14 +198,14 @@ main { max-width: 860px; width: 100%; margin: 0 auto; padding: 18px; }
 }
 /* faixa de título */
 .panel > h2, .panel > .panel-head {
-  margin: -16px -16px 14px; padding: 11px 16px;
+  margin: -16px -16px 14px; padding: 12px 16px;
   background: var(--strip); border-bottom: 1px solid var(--border);
 }
 .panel > h2, .panel-head h2 {
   font-size: 12px; font-weight: 800; letter-spacing: .7px;
   color: var(--text); display: flex; align-items: center; gap: 9px;
 }
-.panel > h2 .ic, .panel-head h2 .ic { color: var(--primary); width: 16px; height: 16px; }
+.panel > h2 .ic, .panel-head h2 .ic { color: var(--primary); width: 18px; height: 18px; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .panel-head h2 { margin: 0; padding: 0; background: none; border: none; }
 .soft { color: var(--text-soft); font-size: 12px; font-weight: 600; margin-bottom: 12px; }
@@ -214,11 +214,11 @@ main { max-width: 860px; width: 100%; margin: 0 auto; padding: 18px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  box-shadow: var(--shadow); padding: 13px 16px;
+  box-shadow: var(--shadow); padding: 14px 17px;
 }
 .card .label { font-size: 10px; font-weight: 700; letter-spacing: .6px; color: var(--text-soft); }
 .card .value {
-  font-size: 21px; font-weight: 800; letter-spacing: -.01em; margin-top: 3px;
+  font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin-top: 3px;
   font-variant-numeric: tabular-nums;
 }
 .card .sub { font-size: 10px; font-weight: 600; color: var(--text-soft); margin-top: 2px; }
@@ -243,11 +243,11 @@ main { max-width: 860px; width: 100%; margin: 0 auto; padding: 18px; }
 }
 .lista li:last-child { border-bottom: none; padding-bottom: 4px; }
 .ico-cat {
-  width: 36px; height: 36px; border-radius: 9px;
-  background: var(--strip); color: var(--text);
+  width: 38px; height: 38px; border-radius: 12px;
+  background: var(--primary-soft); color: var(--primary);
   display: inline-flex; align-items: center; justify-content: center; flex: none;
 }
-.ico-cat .ic { width: 17px; height: 17px; }
+.ico-cat .ic { width: 19px; height: 19px; }
 .lista .info { flex: 1; min-width: 0; }
 .lista .info .nome { font-weight: 800; font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
 .lista .info .det { font-size: 11px; font-weight: 600; color: var(--text-soft); margin-top: 1px; }
@@ -272,11 +272,14 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 
 /* empty state convidativo */
 .vazio {
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 11px;
   color: var(--text-soft); font-size: 12px; font-weight: 600; text-align: center;
-  padding: 22px 14px; border: 1px dashed var(--border); border-radius: 9px;
+  padding: 24px 16px; background: var(--strip); border-radius: 12px;
 }
-.vazio .ic { width: 26px; height: 26px; opacity: .55; }
+.vazio .ic {
+  width: 52px; height: 52px; padding: 14px; border-radius: 999px;
+  background: var(--primary-soft); color: var(--primary); box-sizing: border-box;
+}
 .vazio .btn { margin-top: 2px; }
 
 /* ---------- formulários ---------- */
@@ -288,11 +291,12 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 
 .btn {
   border: 1px solid var(--border); background: var(--surface); color: var(--text);
-  padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+  padding: 9px 15px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;
   display: inline-flex; align-items: center; gap: 7px;
+  transition: border-color .12s, color .12s, filter .12s;
 }
 .btn:hover { border-color: var(--primary); color: var(--primary); }
-.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); box-shadow: 0 2px 8px rgba(23, 84, 138, .28); }
 .btn.primary:hover { filter: brightness(1.08); color: var(--primary-ink); }
 .btn.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
@@ -311,8 +315,8 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 
 /* ---------- metas ---------- */
 .meta-card {
-  border: 1px solid var(--border); border-radius: 9px;
-  padding: 13px 15px; margin-bottom: 10px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 10px; background: var(--surface);
 }
 .meta-card .meta-head { display: flex; align-items: center; gap: 11px; }
 .meta-card .meta-head .ico-cat { width: 38px; height: 38px; }
@@ -322,13 +326,13 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 
 /* ---------- dicas ---------- */
 .dica {
-  display: flex; gap: 10px; align-items: flex-start;
-  padding: 11px 13px; border-radius: 9px;
+  display: flex; gap: 11px; align-items: flex-start;
+  padding: 12px 14px; border-radius: 12px;
   margin-bottom: 8px; font-size: 12px; font-weight: 600; background: var(--strip);
   line-height: 1.55;
 }
-.dica .d-ico { flex: none; display: inline-flex; margin-top: 2px; }
-.dica .d-ico .ic { width: 16px; height: 16px; }
+.dica .d-ico { flex: none; display: inline-flex; margin-top: 1px; }
+.dica .d-ico .ic { width: 18px; height: 18px; }
 .dica .d-corpo { flex: 1; min-width: 0; }
 .dica.critical { background: var(--danger-soft); color: var(--danger); }
 .dica.warning  { background: var(--warn-bg); color: var(--warn-text); }
@@ -347,11 +351,11 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 .btn-gravar {
   display: inline-flex; align-items: center; gap: 9px;
   background: var(--primary); color: var(--primary-ink); border: none; cursor: pointer;
-  font-size: 14px; font-weight: 800; padding: 13px 32px; border-radius: 999px;
-  box-shadow: var(--shadow); letter-spacing: .5px;
+  font-size: 14px; font-weight: 800; padding: 14px 34px; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(23, 84, 138, .35); letter-spacing: .5px;
 }
 .btn-gravar:hover { filter: brightness(1.08); }
-.btn-gravar .ic { width: 16px; height: 16px; }
+.btn-gravar .ic { width: 18px; height: 18px; }
 .btn-gravar.reabrir { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 .btn-gravar.reabrir:hover { border-color: var(--primary); color: var(--primary); filter: none; }
 
@@ -368,15 +372,15 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 }
 .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
 .chip {
-  display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 42px;
-  border: 1.5px solid var(--border); border-radius: 9px;
-  padding: 9px 12px; background: var(--surface); cursor: pointer;
+  display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 44px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 9px 13px; background: var(--surface); cursor: pointer;
   font-size: 12px; font-weight: 700; color: var(--text); text-align: left;
+  transition: border-color .12s, background .12s;
 }
-.chip .ic { width: 16px; height: 16px; color: var(--text-soft); }
+.chip .ic { width: 18px; height: 18px; color: var(--primary); }
 .chip .chip-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
-.chip:hover .ic { color: var(--primary); }
 .chip .selo { flex: none; }
 
 /* ---------- contas ---------- */
@@ -399,7 +403,7 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 
 /* ---------- dialogs ---------- */
 dialog {
-  border: 1px solid var(--border); border-radius: 12px; padding: 0;
+  border: 1px solid var(--border); border-radius: 16px; padding: 0;
   background: var(--surface); color: var(--text);
   width: min(480px, calc(100vw - 32px));
   box-shadow: 0 12px 44px rgba(0, 0, 0, .3);
@@ -478,8 +482,10 @@ details summary { cursor: pointer; font-weight: 800; color: var(--primary); font
   .sidebar.aberta { transform: translateX(0); }
   .overlay.visivel { display: block; }
   .btn-menu { display: inline-flex; }
-  main { padding: 12px; }
+  main { padding: 14px; }
+  .tela > * + * { margin-top: 14px; }
   .mes-nav span { min-width: 102px; font-size: 13px; }
   .titulo-tela { display: none; }
-  .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .card .value { font-size: 20px; }
 }
