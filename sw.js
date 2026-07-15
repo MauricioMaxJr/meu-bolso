@@ -1,5 +1,5 @@
 /* Meu Bolso — service worker: app shell offline (cache-first) */
-const VERSAO = "meubolso-v7";
+const VERSAO = "meubolso-v7.1";
 const ARQUIVOS = [
   "./",
   "./index.html",
@@ -23,15 +23,24 @@ self.addEventListener("activate", ev => {
   );
 });
 self.addEventListener("fetch", ev => {
+  if (ev.request.method !== "GET") return;
+  // navegação: rede primeiro, cache como reserva - a abertura do app nunca depende do cache
+  if (ev.request.mode === "navigate") {
+    ev.respondWith(
+      fetch(ev.request).catch(() => caches.match("./index.html", { ignoreSearch: true }))
+    );
+    return;
+  }
+  // demais arquivos: cache primeiro
   ev.respondWith(
     caches.match(ev.request, { ignoreSearch: true }).then(hit =>
       hit || fetch(ev.request).then(res => {
-        if (ev.request.method === "GET" && res.ok && new URL(ev.request.url).origin === location.origin) {
+        if (res.ok && new URL(ev.request.url).origin === location.origin) {
           const clone = res.clone();
           caches.open(VERSAO).then(c => c.put(ev.request, clone));
         }
         return res;
       })
-    )
+    ).catch(() => fetch(ev.request))
   );
 });
