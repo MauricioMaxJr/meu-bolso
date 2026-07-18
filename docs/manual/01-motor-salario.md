@@ -55,7 +55,7 @@ sempre salário + prêmio. Ordem do cálculo em `calculaSalario`:
 3. `irrf = calcIRRF(bruto - inss)` (tabela mensal, parcela a deduzir)
 4. `liquido = bruto - inss - irrf - outrosDescontos` (arredondado a 2 casas)
 
-### INSS (vigência 2026, Portaria MPS/MF nº 13/2026)
+### INSS (vigência 2026, faixas da Portaria MPS/MF nº 13/2026)
 
 | Faixa (até) | Alíquota |
 |---|---|
@@ -64,7 +64,10 @@ sempre salário + prêmio. Ordem do cálculo em `calculaSalario`:
 | R$ 4.354,27 | 12% |
 | R$ 8.475,55 | 14% |
 
-Teto de desconto: **R$ 988,09**. Como o bruto deste esquema sempre supera o
+Teto de desconto: **R$ 988,07**, o valor PRATICADO na folha. A soma oficial
+das parcelas dá R$ 988,09, mas a ADP trunca cada parcela antes de somar
+(121,57 + 115,36 + 174,17 + 576,97 = 988,07). Validado nos 6 demonstrativos
+de jan a jun/2026 em 18/07/2026. Como o bruto deste esquema sempre supera o
 teto da tabela, o INSS trava no teto todo mês (em 2025 era R$ 951,62).
 
 ### IRRF (tabela mensal desde mai/2025, mantida em 2026 pela Lei 15.191/2025)
@@ -92,20 +95,20 @@ base, depositado pelo empregador).
 ## 3. Números de referência (selados no canonicos.json)
 
 Caso canônico, base R$ 14.000, meta 100%, mês normal, outros R$ 160:
-bruto **R$ 24.000,00**, INSS **R$ 988,09**, IRRF **R$ 5.419,55**,
-líquido **R$ 17.432,36**.
+bruto **R$ 24.000,00**, INSS **R$ 988,07**, IRRF **R$ 5.419,55**,
+líquido **R$ 17.432,38**.
 
 Piso (pior cenário: 0% de meta, sem prêmio), com outros R$ 160:
 
 | Base | Piso líquido |
 |---|---|
-| R$ 10.000 | R$ 7.282,36 |
-| R$ 12.000 | R$ 8.732,36 |
-| R$ 14.000 | R$ 10.182,36 |
-| R$ 16.000 | R$ 11.632,36 |
+| R$ 10.000 | R$ 7.282,38 |
+| R$ 12.000 | R$ 8.732,38 |
+| R$ 14.000 | R$ 10.182,38 |
+| R$ 16.000 | R$ 11.632,38 |
 
 Melhor cenário do ano (base 14.000, 120%+, dezembro): bruto R$ 64.000,00 e
-líquido R$ 46.432,36.
+líquido R$ 46.432,38.
 
 Regra rápida de previsibilidade (medida na folha 2025): descontos entre 26,7% e
 28,0% do bruto, média ≈ 27,4% (líquido ≈ 72,6% do bruto).
@@ -120,13 +123,23 @@ Regra rápida de previsibilidade (medida na folha 2025): descontos entre 26,7% e
 - No app, esses valores entram como ajuste manual do salário do mês ou como
   "Outras rendas" (categorias Férias e 13º existem prontas).
 
-## 5. Histórico de vigências
+## 5. Histórico de vigências (extraído dos 67 demonstrativos reais, 2022 a 2026)
 
-| Período | INSS teto | IRRF | Status |
+| Período | INSS teto na folha | IRRF | Status |
 |---|---|---|---|
-| 2025 (fev a dez) | R$ 951,62 | tabela mai/2025 | validado centavo a centavo na folha |
-| 2026 | R$ 988,09 | mesma tabela (Lei 15.191/2025) | vigente no código |
+| 2022 | R$ 828,38 (fev: 825,47, base abaixo do teto) | tabela da época | histórico (era gerente até mar/2022) |
+| 2023 | R$ 876,95; a partir de abr: R$ 877,22 | tabela da época | histórico |
+| 2024 | R$ 908,85 | tabela fev/2024 | histórico |
+| 2025 (fev a dez) | R$ 951,62 (oficial 951,63) | tabela mai/2025 | validado centavo a centavo na folha |
+| 2026 (jan a jun) | R$ 988,07 (oficial 988,09) | mesma tabela (Lei 15.191/2025) | VIGENTE, validado na folha em 18/07/2026 |
 
-⚠️ VALIDAR com o Mauricio: conferir num demonstrativo real de 2026 se o INSS
-descontado é exatamente R$ 988,09 (a folha às vezes pratica 1 centavo de
-diferença, como em 2025: 951,62 na folha contra 951,63 da tabela).
+Padrão confirmado: a ADP trunca cada parcela do INSS antes de somar, por isso
+o valor da folha fica 2 centavos abaixo da soma oficial. O motor usa sempre o
+valor praticado na folha.
+
+Fato da folha 2026 (importante): a base em folha continua R$ 12.556,32 (faixa
+nominal de R$ 12.000 com o dissídio de out/2025) até jun/2026, com prêmios
+pagos normalmente (ex.: jun/2026 = R$ 8.000, faixa 90 a 94% de mês especial).
+"Outros descontos" reais de jun/2026: R$ 459,93 (Amil 10,93 + assistencial
+50,00 + vale alimentação adicional 124,00 + vale transporte 275,00). O padrão
+histórico do desconto de vale transporte varia mês a mês.

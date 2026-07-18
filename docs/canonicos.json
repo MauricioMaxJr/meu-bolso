@@ -1,7 +1,7 @@
 {
   "aviso": "GERADO por verificar.mjs --selar. NÃO editar na mão: é derivado do código.",
-  "versaoSW": "meubolso-v8",
-  "hashAssets": "53af1b13e24033defcf6d0933ed6ce57e514ec3fb6d4799481394f76ab6fc092",
+  "versaoSW": "meubolso-v9",
+  "hashAssets": "8c9414e817e312d551b7101b9cab858347c6e0654a0ed5173843ebabdbe10fbe",
   "inssFaixas": [
     {
       "ate": 1621,
@@ -20,7 +20,7 @@
       "aliq": 0.14
     }
   ],
-  "tetoINSS": 988.09,
+  "tetoINSS": 988.07,
   "irrfFaixas": [
     {
       "ate": 2428.8,
@@ -112,10 +112,10 @@
     11
   ],
   "pisos160": {
-    "10000": 7282.36,
-    "12000": 8732.36,
-    "14000": 10182.36,
-    "16000": 11632.36
+    "10000": 7282.38,
+    "12000": 8732.38,
+    "14000": 10182.38,
+    "16000": 11632.38
   },
   "ref14k100Normal": {
     "tipo": "normal",
@@ -128,10 +128,10 @@
     },
     "premio": 10000,
     "bruto": 24000,
-    "inss": 988.09,
+    "inss": 988.07,
     "irrf": 5419.55,
     "outrosFolha": 160,
-    "liquido": 17432.36
+    "liquido": 17432.38
   },
   "ref14k120Dez": {
     "tipo": "dezembro",
@@ -144,9 +144,9 @@
     },
     "premio": 50000,
     "bruto": 64000,
-    "inss": 988.09,
+    "inss": 988.07,
     "irrf": 16419.55,
     "outrosFolha": 160,
-    "liquido": 46432.36
+    "liquido": 46432.38
   }
 }

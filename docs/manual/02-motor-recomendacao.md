@@ -59,9 +59,10 @@ campo a campo).
 Mês normal, base 14.000, meta 100%, outros 160, renda extra de R$ 500,
 custos R$ 3.500 (essenciais R$ 3.440,10), reserva incompleta:
 
-- renda = 17.458,81 + 500 = **17.958,81**
-- piso (com descFolha 160) = **10.182,36** (na época do teste, tabela 2025:
-  10.208,81; o valor vigente está no canonicos.json)
+- renda = líquido do mês + 500 (o teste E2E rodou com a tabela 2025:
+  17.458,81 + 500 = 17.958,81)
+- piso (com descFolha 160): o valor vigente está no canonicos.json e no
+  capítulo 01 (tabela de pisos)
 - excedente = renda - piso; mínimo = 20% × renda = 3.591,76
 - regraPremio = 50% × excedente; recomendação = max(mínimo, regraPremio),
   limitada ao saldo do mês.

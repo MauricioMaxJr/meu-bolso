@@ -8,7 +8,9 @@
 /* ================= MOTOR DE SALÁRIO =================
    Regras validadas centavo a centavo contra a folha real de 2025.
    Tabelas com vigência 2026:
-   - INSS: Portaria MPS/MF nº 13/2026 (teto de desconto R$ 988,09).
+   - INSS: faixas da Portaria MPS/MF nº 13/2026; teto = R$ 988,07, o valor
+     PRATICADO na folha (a soma oficial dá 988,09, mas a ADP trunca cada
+     parcela; conferido nos demonstrativos de jan a jun/2026).
    - IRRF: tabela mensal mantida pela Lei 15.191/2025; o redutor da
      Lei 15.270/2025 (isenção até R$ 5.000) NÃO se aplica aqui, pois a
      renda tributável deste esquema salarial nunca fica abaixo de R$ 7.350. */
@@ -18,7 +20,7 @@ const INSS_FAIXAS = [
   { ate: 4354.27, aliq: 0.12  },
   { ate: 8475.55, aliq: 0.14  },
 ];
-const TETO_INSS = 988.09;
+const TETO_INSS = 988.07;
 const IRRF_FAIXAS = [
   { ate: 2428.80, aliq: 0,     deduz: 0      },
   { ate: 2826.65, aliq: 0.075, deduz: 182.16 },
