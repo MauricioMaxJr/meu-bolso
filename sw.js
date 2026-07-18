@@ -1,5 +1,5 @@
 /* Meu Bolso — service worker: app shell offline (cache-first) */
-const VERSAO = "meubolso-v7.1";
+const VERSAO = "meubolso-v8";
 const ARQUIVOS = [
   "./",
   "./index.html",

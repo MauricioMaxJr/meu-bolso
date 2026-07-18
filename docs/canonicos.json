@@ -1,0 +1,152 @@
+{
+  "aviso": "GERADO por verificar.mjs --selar. NÃO editar na mão: é derivado do código.",
+  "versaoSW": "meubolso-v8",
+  "hashAssets": "53af1b13e24033defcf6d0933ed6ce57e514ec3fb6d4799481394f76ab6fc092",
+  "inssFaixas": [
+    {
+      "ate": 1621,
+      "aliq": 0.075
+    },
+    {
+      "ate": 2902.84,
+      "aliq": 0.09
+    },
+    {
+      "ate": 4354.27,
+      "aliq": 0.12
+    },
+    {
+      "ate": 8475.55,
+      "aliq": 0.14
+    }
+  ],
+  "tetoINSS": 988.09,
+  "irrfFaixas": [
+    {
+      "ate": 2428.8,
+      "aliq": 0,
+      "deduz": 0
+    },
+    {
+      "ate": 2826.65,
+      "aliq": 0.075,
+      "deduz": 182.16
+    },
+    {
+      "ate": 3751.05,
+      "aliq": 0.15,
+      "deduz": 394.16
+    },
+    {
+      "ate": 4664.68,
+      "aliq": 0.225,
+      "deduz": 675.49
+    },
+    {
+      "ate": "Infinity",
+      "aliq": 0.275,
+      "deduz": 908.73
+    }
+  ],
+  "faixasMeta": [
+    {
+      "min": 80,
+      "label": "80 a 84%",
+      "normal": 0,
+      "especial": 0,
+      "dezembro": 15000
+    },
+    {
+      "min": 85,
+      "label": "85 a 89%",
+      "normal": 1500,
+      "especial": 1500,
+      "dezembro": 20000
+    },
+    {
+      "min": 90,
+      "label": "90 a 94%",
+      "normal": 6000,
+      "especial": 8000,
+      "dezembro": 25000
+    },
+    {
+      "min": 95,
+      "label": "95 a 99%",
+      "normal": 7500,
+      "especial": 10000,
+      "dezembro": 30000
+    },
+    {
+      "min": 100,
+      "label": "100 a 104%",
+      "normal": 10000,
+      "especial": 12000,
+      "dezembro": 35000
+    },
+    {
+      "min": 105,
+      "label": "105 a 109%",
+      "normal": 12000,
+      "especial": 14000,
+      "dezembro": 40000
+    },
+    {
+      "min": 110,
+      "label": "110 a 119%",
+      "normal": 14000,
+      "especial": 17000,
+      "dezembro": 45000
+    },
+    {
+      "min": 120,
+      "label": "120% ou +",
+      "normal": 15000,
+      "especial": 20000,
+      "dezembro": 50000
+    }
+  ],
+  "mesesEspeciais": [
+    6,
+    8,
+    11
+  ],
+  "pisos160": {
+    "10000": 7282.36,
+    "12000": 8732.36,
+    "14000": 10182.36,
+    "16000": 11632.36
+  },
+  "ref14k100Normal": {
+    "tipo": "normal",
+    "faixa": {
+      "min": 100,
+      "label": "100 a 104%",
+      "normal": 10000,
+      "especial": 12000,
+      "dezembro": 35000
+    },
+    "premio": 10000,
+    "bruto": 24000,
+    "inss": 988.09,
+    "irrf": 5419.55,
+    "outrosFolha": 160,
+    "liquido": 17432.36
+  },
+  "ref14k120Dez": {
+    "tipo": "dezembro",
+    "faixa": {
+      "min": 120,
+      "label": "120% ou +",
+      "normal": 15000,
+      "especial": 20000,
+      "dezembro": 50000
+    },
+    "premio": 50000,
+    "bruto": 64000,
+    "inss": 988.09,
+    "irrf": 16419.55,
+    "outrosFolha": 160,
+    "liquido": 46432.36
+  }
+}

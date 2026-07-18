@@ -1,0 +1,11 @@
+#!/bin/sh
+# Bloqueia commit se a auditoria mecânica estiver VERMELHA.
+cd "$(git rev-parse --show-toplevel)" || exit 1
+node verificar.mjs
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "COMMIT BLOQUEADO: verificar VERMELHO. Corrija (ou, se a mudanca foi"
+  echo "intencional, bump do VERSAO no sw.js e ?v= no index.html + node verificar.mjs --selar)."
+  exit 1
+fi
+exit 0

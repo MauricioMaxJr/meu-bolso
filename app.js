@@ -1,17 +1,24 @@
 "use strict";
 /* ============================================================
-   Meu Bolso v2 — app pessoal de finanças
-   Dados 100% locais (localStorage). Ícones: Lucide (ISC).
+   Meu Bolso v8 — app pessoal de finanças
+   Dados 100% locais (localStorage). Ícones: Phosphor duotone (MIT).
+   Manual completo do produto: docs/ (fonte da verdade: este código).
    ============================================================ */
 
-/* ================= MOTOR DE SALÁRIO (validado c/ folha 2025) ================= */
+/* ================= MOTOR DE SALÁRIO =================
+   Regras validadas centavo a centavo contra a folha real de 2025.
+   Tabelas com vigência 2026:
+   - INSS: Portaria MPS/MF nº 13/2026 (teto de desconto R$ 988,09).
+   - IRRF: tabela mensal mantida pela Lei 15.191/2025; o redutor da
+     Lei 15.270/2025 (isenção até R$ 5.000) NÃO se aplica aqui, pois a
+     renda tributável deste esquema salarial nunca fica abaixo de R$ 7.350. */
 const INSS_FAIXAS = [
-  { ate: 1518.00, aliq: 0.075 },
-  { ate: 2793.88, aliq: 0.09  },
-  { ate: 4190.83, aliq: 0.12  },
-  { ate: 8157.41, aliq: 0.14  },
+  { ate: 1621.00, aliq: 0.075 },
+  { ate: 2902.84, aliq: 0.09  },
+  { ate: 4354.27, aliq: 0.12  },
+  { ate: 8475.55, aliq: 0.14  },
 ];
-const TETO_INSS = 951.62;
+const TETO_INSS = 988.09;
 const IRRF_FAIXAS = [
   { ate: 2428.80, aliq: 0,     deduz: 0      },
   { ate: 2826.65, aliq: 0.075, deduz: 182.16 },
@@ -72,7 +79,7 @@ function calculaSalario(base, pctMeta, mesNum, outrosFolha) {
 }
 
 /* ================= ÍCONES ================= */
-const ico = n => `<svg class="ic" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${(window.LUCIDE && LUCIDE[n]) || LUCIDE["package"]}</svg>`;
+const ico = n => `<svg class="ic" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${(window.ICONES && ICONES[n]) || ICONES["package"]}</svg>`;
 const ICONES_ESCOLHA = ["target","life-buoy","award","plane","car","house","piggy-bank","gift",
   "laptop","dumbbell","baby","tree-palm","luggage","shopping-bag","gamepad-2","heart-pulse",
   "graduation-cap","key","landmark","briefcase","coins","shield","tv","wine","utensils",
@@ -153,6 +160,7 @@ function estadoDefault() {
 }
 
 function migrar(st) {
+  if (!st.contas) st.contas = []; // backups antigos (v1 ou v2 sem Contas) não podem quebrar o render
   if (st.version === 2) return st;
   // v1 -> v2: emojis viram ícones Lucide, categorias novas entram, tema
   const defs = categoriasDefault();
@@ -422,6 +430,7 @@ function abrirDialog(titulo, campos, aoSalvar, valores = {}, aoExcluir = null) {
     bx.onclick = () => { dlg.close("cancel"); aoExcluir(); };
     document.querySelector("#dlg-form .btn-row").prepend(bx);
   }
+  dlg.returnValue = ""; // limpa "cancel" de um fechamento anterior, senão o 1º salvar seguinte é ignorado
   campos.forEach(c => {
     if (c.tipo === "icone") {
       const wrap = el("label", null, esc(c.label));
