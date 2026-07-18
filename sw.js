@@ -1,11 +1,12 @@
 /* Meu Bolso — service worker: app shell offline (cache-first) */
-const VERSAO = "meubolso-v9";
+const VERSAO = "meubolso-v10";
 const ARQUIVOS = [
   "./",
   "./index.html",
   "./app.css",
   "./app.js",
   "./icons.js",
+  "./holerite.js",
   "./fonts/InterVariable.woff2",
   "./manifest.webmanifest",
   "./icons/icon-192.png",

@@ -20,31 +20,28 @@ entrega termina com `node verificar.mjs` VERDE + teste real no navegador.
 - [x] 67 holerites de E:\Holerites lidos, classificados e renomeados
       (AAAA-MM tipo.pdf); histórico real 2022 a 2026 extraído.
 
+## Feito (v1.1.0, 18/07/2026, aprovado pelo Mauricio)
+
+- [x] **Importar holerite**: painel na tela Renda, parser próprio validado nos
+      67 demonstrativos reais (golden no verificar), importação em lote,
+      % de meta inferida do prêmio, PLR/13º/dissídio/férias como rendas,
+      busca e detalhe por verba. O PDF não é salvo (capítulo 09).
+- [x] **Mapa**: nona tela; ritmo real, projeções (fim do ano, 1/3/5 anos),
+      metas com data prevista, cenários de corte, alavancas por categoria e
+      ano a ano do líquido real (capítulo 10).
+
 ## Próximos (em ordem)
 
-1. **⚠️ VALIDAR proposta: Importar holerite (PDF vira dados)**: botão na tela
-   Renda que lê o PDF da ADP no aparelho (parser próprio, sem biblioteca
-   externa, provado no corpus dos 67), classifica o tipo (salário, férias,
-   13º adiantamento/integral, PLR, dissídio), preenche o registro do mês com o
-   líquido real e guarda o extrato estruturado em `S.holerites` para busca e
-   relatórios. O PDF NÃO fica salvo. Decisões do Mauricio: nome do botão, o
-   que fazer com PLR/13º (sugerido: entrar como Outras rendas nas categorias
-   que já existem) e se importa o histórico 2022 a 2026 de uma vez.
-2. **⚠️ VALIDAR proposta: Consultor / Mapa (previsibilidade)**: painel novo
-   que cruza o histórico de líquido real (anos fechados) com custos e metas:
-   projeção de fim de ano (guardado e reserva), "no ritmo atual a meta X
-   completa em MM/AAAA", cenários de corte de custos, filtros de período
-   (12m, 24m, tudo). Tudo baseado no líquido que caiu na conta.
-3. **Pausar custo fixo pela interface**: o campo `ativo` existe e é respeitado,
+1. **Pausar custo fixo pela interface**: o campo `ativo` existe e é respeitado,
    mas não há botão para desativar sem excluir (capítulo 04). Somar, não trocar.
-4. **Série histórica das Contas**: `contasTotal` já entra em cada snapshot;
+2. **Série histórica das Contas**: `contasTotal` já entra em cada snapshot;
    falta um gráfico "Evolução das contas" em Relatórios.
-5. **Dissídio na base**: opção de informar a base real de folha (12.556,32 em
+3. **Dissídio na base**: opção de informar a base real de folha (12.556,32 em
    folha até jun/2026) mantendo a faixa nominal para o prêmio; hoje o ajuste é
    manual no registro do salário. Ganha força com o importador de holerite.
-6. **13º e férias no app**: hoje só na calculadora (capítulo 01, seção 4);
+4. **13º e férias no app**: hoje só na calculadora (capítulo 01, seção 4);
    avaliar painel anual com as duas parcelas do 13º.
-7. **Backup automático**: lembrete periódico de exportar (ex.: dica quando o
+5. **Backup automático**: lembrete periódico de exportar (ex.: dica quando o
    último export passou de 60 dias).
 
 ## Ideias avaliadas e adiadas (com o porquê)

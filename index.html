@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Meu Bolso">
-<link rel="stylesheet" href="app.css?v=9">
+<link rel="stylesheet" href="app.css?v=10">
 </head>
 <body>
 
@@ -26,6 +26,7 @@
     <button data-tela="metas" data-ic="target">Metas</button>
     <button data-tela="contas" data-ic="banknote">Contas</button>
     <button data-tela="relatorios" data-ic="chart-column">Relatórios</button>
+    <button data-tela="mapa" data-ic="compass">Mapa</button>
     <button data-tela="dicas" data-ic="lightbulb">Dicas</button>
     <button data-tela="config" data-ic="settings">Configurações</button>
   </nav>
@@ -83,6 +84,17 @@
           <button class="btn primary" id="btn-add-renda">Adicionar</button>
         </div>
         <ul class="lista" id="lista-rendas"></ul>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-ic="download">Holerites</h2>
+          <button class="btn primary" id="btn-import-holerite">Importar PDF</button>
+        </div>
+        <p class="soft">O app lê o PDF no aparelho e guarda só os dados. O arquivo não fica salvo.</p>
+        <input type="file" id="file-holerite" accept="application/pdf" multiple hidden>
+        <div class="form-grid" style="margin-bottom:12px"><label>Buscar
+          <input type="search" id="busca-holerite" placeholder="ano, tipo ou valor"></label></div>
+        <div id="lista-holerites"></div>
       </div>
     </section>
 
@@ -161,6 +173,34 @@
       <div id="painel-anos"></div>
     </section>
 
+    <!-- ================= MAPA ================= -->
+    <section id="tela-mapa" class="tela" hidden>
+      <div id="mapa-vazio"></div>
+      <div class="panel" id="painel-mapa-ritmo">
+        <div class="panel-head">
+          <h2 data-ic="trending-up">Seu ritmo</h2>
+          <div class="btn-row" id="mapa-filtros" style="margin:0"></div>
+        </div>
+        <div id="mapa-ritmo"></div>
+      </div>
+      <div class="panel" id="painel-mapa-projecao">
+        <h2 data-ic="piggy-bank">Onde você chega</h2>
+        <div id="mapa-projecao"></div>
+      </div>
+      <div class="panel" id="painel-mapa-metas">
+        <h2 data-ic="target">Metas no ritmo atual</h2>
+        <div id="mapa-metas"></div>
+      </div>
+      <div class="panel" id="painel-mapa-cenarios">
+        <h2 data-ic="lightbulb">Cenários e cortes</h2>
+        <div id="mapa-cenarios"></div>
+      </div>
+      <div class="panel" id="painel-mapa-anos">
+        <h2 data-ic="calendar">Ano a ano (líquido real)</h2>
+        <div id="mapa-anos"></div>
+      </div>
+    </section>
+
     <!-- ================= DICAS ================= -->
     <section id="tela-dicas" class="tela" hidden>
       <div class="panel">
@@ -237,7 +277,8 @@
 <div id="chart-tooltip" class="chart-tooltip" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
-<script src="icons.js?v=9"></script>
-<script src="app.js?v=9"></script>
+<script src="icons.js?v=10"></script>
+<script src="holerite.js?v=10"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>

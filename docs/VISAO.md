@@ -24,6 +24,8 @@ O ciclo de uso: registrar o salário do mês, lançar custos, aportar nas metas 
 | Dicas (alertas inteligentes) | Pronto | [manual/06-dicas.md](manual/06-dicas.md) |
 | Relatórios (4 gráficos + tabelas) | Pronto | [manual/07-relatorios.md](manual/07-relatorios.md) |
 | Dados, backup, migração e PWA | Pronto | [manual/08-dados-backup-pwa.md](manual/08-dados-backup-pwa.md) |
+| Importar holerite (PDF vira dados) | Pronto (parser validado nos 67 reais) | [manual/09-importar-holerite.md](manual/09-importar-holerite.md) |
+| Mapa (consultor de previsibilidade) | Pronto | [manual/10-mapa-consultor.md](manual/10-mapa-consultor.md) |
 
 ## Contratos e ordem de trabalho
 

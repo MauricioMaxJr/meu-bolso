@@ -78,7 +78,7 @@ mono ? ok("prêmios monotônicos nas 3 colunas") : erro("tabela de prêmios NÃO
 /* ---------- 2. livro-razão ---------- */
 console.log("\n== 2. LIVRO-RAZÃO (canonicos.json) ==");
 const hashAssets = createHash("sha256");
-for (const f of ["index.html", "app.js", "app.css", "icons.js", "sw.js", "manifest.webmanifest"])
+for (const f of ["index.html", "app.js", "app.css", "icons.js", "holerite.js", "sw.js", "manifest.webmanifest"])
   hashAssets.update(readFileSync(join(RAIZ, f)));
 const derivado = {
   aviso: "GERADO por verificar.mjs --selar. NÃO editar na mão: é derivado do código.",
@@ -157,7 +157,7 @@ quebradas.length ? erro("IDs sem alvo: " + quebradas.join(", ")) : ok(`${refs.si
 /* ---------- 6. encoding ---------- */
 console.log("\n== 6. ENCODING ==");
 let encRuim = 0;
-for (const f of ["app.js", "app.css", "index.html", "icons.js", "sw.js", "manifest.webmanifest"]) {
+for (const f of ["app.js", "app.css", "index.html", "icons.js", "holerite.js", "sw.js", "manifest.webmanifest"]) {
   const buf = readFileSync(join(RAIZ, f));
   if (buf.toString("utf8").includes("�")) { encRuim++; erro(f + ": bytes inválidos em UTF-8"); }
   if (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) { encRuim++; erro(f + ": BOM indevido no início do arquivo"); }
@@ -200,6 +200,35 @@ else {
     faltam.length ? erro("manual/01 sem os números atuais do código: " + faltam.join(" | "))
                   : ok("manual/01 cita os números canônicos vigentes (teto INSS, 24 prêmios, líquido de referência)");
   } else erro("manual/01-motor-salario.md não existe");
+}
+
+/* ---------- 9. parser de holerite: golden no corpus real ---------- */
+console.log("\n== 9. PARSER DE HOLERITE ==");
+const CORPUS = "E:/Holerites";
+if (!existsSync(CORPUS)) console.log("  INFO pasta E:\\Holerites ausente nesta máquina; golden do parser pulado");
+else {
+  const { inflateSync } = await import("node:zlib");
+  (0, eval)(readFileSync(join(RAIZ, "holerite.js"), "utf8"));
+  const inflate = b => Promise.resolve(new Uint8Array(inflateSync(b)));
+  const pdfs = readdirSync(CORPUS).filter(f => f.endsWith(".pdf"));
+  let validos = 0, invalidos = [];
+  for (const f of pdfs) {
+    try {
+      const r = await globalThis.Holerite.lerHolerite(new Uint8Array(readFileSync(join(CORPUS, f))), inflate);
+      if (r.valido) validos++; else invalidos.push(f + " (" + r.erros[0] + ")");
+      // nome do arquivo carrega a verdade: "AAAA-MM tipo.pdf"
+      const m = f.match(/^(\d{4}-\d{2}) (.+)\.pdf$/);
+      if (m && (r.mes !== m[1] || r.tipo !== m[2])) invalidos.push(f + " (classificou " + r.tipo + " " + r.mes + ")");
+    } catch (e) { invalidos.push(f + " (" + e.message + ")"); }
+  }
+  if (invalidos.length) erro("parser falhou em: " + invalidos.slice(0, 5).join(" | ") + (invalidos.length > 5 ? " ..." : ""));
+  else ok(`corpus real: ${validos} holerites lidos e classificados, prova contábil fechando em todos`);
+  if (pdfs.length >= 1) {
+    const ref = await globalThis.Holerite.lerHolerite(new Uint8Array(readFileSync(join(CORPUS, "2026-06 salario.pdf"))), inflate);
+    (ref.liquido === 14635.78 && ref.inss === 988.07 && ref.premio === 8000)
+      ? ok("golden jun/2026: líquido 14.635,78, INSS 988,07, prêmio 8.000")
+      : erro("golden jun/2026 divergente: " + JSON.stringify({ l: ref.liquido, i: ref.inss, p: ref.premio }));
+  }
 }
 
 console.log("\n===============================");

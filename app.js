@@ -152,17 +152,21 @@ function estadoDefault() {
       pctPremioLivre: 30,
       reservaMeses: 6,
       tema: "auto",
+      mapaPeriodo: 12,
     },
     categorias: categoriasDefault(),
     custosFixos: [],
     metas: [],
     contas: [],               // {id,nome,icone,saldo} - onde o dinheiro está
+    holerites: [],            // extratos importados de PDF (o arquivo não é salvo)
     meses: {},
   };
 }
 
 function migrar(st) {
   if (!st.contas) st.contas = []; // backups antigos (v1 ou v2 sem Contas) não podem quebrar o render
+  if (!st.holerites) st.holerites = [];
+  if (st.config && st.config.mapaPeriodo == null) st.config.mapaPeriodo = 12;
   if (st.version === 2) return st;
   // v1 -> v2: emojis viram ícones Lucide, categorias novas entram, tema
   const defs = categoriasDefault();
@@ -485,7 +489,7 @@ function abrirDialog(titulo, campos, aoSalvar, valores = {}, aoExcluir = null) {
 /* ================= NAVEGAÇÃO ================= */
 let telaAtiva = "inicio";
 const TITULOS = { inicio: "Início", renda: "Renda", custos: "Custos", metas: "Metas",
-                  contas: "Contas", relatorios: "Relatórios", dicas: "Dicas", config: "Configurações" };
+                  contas: "Contas", relatorios: "Relatórios", mapa: "Mapa", dicas: "Dicas", config: "Configurações" };
 
 function trocaTela(nome) {
   telaAtiva = nome;
@@ -507,7 +511,7 @@ function render() {
   stat.textContent = mes.status === "gravado" ? "Gravado" : "Em aberto";
   stat.className = "badge" + (mes.status === "gravado" ? " gravado" : "");
   renderInicio(); renderRenda(); renderCustos(); renderMetas(); renderContas();
-  renderRelatorios(); renderDicas(); renderConfig();
+  renderRelatorios(); renderMapa(); renderDicas(); renderConfig(); renderHolerites();
 }
 
 /* ---------- Contas (onde o dinheiro está) ---------- */
@@ -997,6 +1001,233 @@ function ligaTooltips(root) {
   });
 }
 
+/* ================= HOLERITES (importação de PDF) ================= */
+const TIPO_HOLERITE = {
+  "salario":                { rotulo: "Salário",           icone: "briefcase",   cat: null },
+  "salario-ferias":         { rotulo: "Salário com férias", icone: "tree-palm",  cat: null },
+  "13-salario-adiantamento":{ rotulo: "13º adiantamento",  icone: "calendar-check", cat: "cat-decimo" },
+  "13-salario-integral":    { rotulo: "13º integral",      icone: "calendar-check", cat: "cat-decimo" },
+  "plr":                    { rotulo: "PLR",               icone: "trending-up", cat: "cat-plr" },
+  "dissidio-retroativo":    { rotulo: "Dissídio retroativo", icone: "coins",    cat: "cat-salario" },
+};
+
+function inferePctMeta(premio, tipoMes) {
+  if (!(premio > 0)) return 0; // sem prêmio: abaixo de 80%
+  const fx = FAIXAS_META.find(f => f[tipoMes] === premio);
+  return fx ? fx.min : null;   // null: prêmio fora da tabela (esquema antigo), mantém o % atual
+}
+
+function aplicarHolerite(reg) {
+  const mes = getMes(reg.mes);
+  const anterior = S.holerites.find(h => h.mes === reg.mes && h.tipo === reg.tipo);
+  if (anterior) { // reimportação: substitui o registro e as rendas que ele criou
+    if (mes.status !== "gravado") mes.rendas = mes.rendas.filter(r => r.holeriteId !== anterior.id);
+    S.holerites = S.holerites.filter(h => h.id !== anterior.id);
+  }
+  const h = { id: uid(), tipo: reg.tipo, mes: reg.mes, liquido: reg.liquido,
+    vencimentos: reg.vencimentos, descontos: reg.descontos, inss: reg.inss, irrf: reg.irrf,
+    outros: reg.outros, fgts: reg.fgts, premio: reg.premio, base: reg.base,
+    adtoFerias: reg.adtoFerias,
+    itens: reg.itens.map(i => ({ cod: i.cod, desc: i.desc, vencimento: i.vencimento, desconto: i.desconto })),
+    em: new Date().toISOString() };
+  S.holerites.push(h);
+  if (mes.status === "gravado") return "historico"; // mês congelado: só guarda o extrato
+
+  if (reg.tipo === "salario" || reg.tipo === "salario-ferias") {
+    const pct = inferePctMeta(reg.premio, tipoDoMes(mesNum(reg.mes)));
+    if (pct != null) mes.sal.pctMeta = pct;
+    const est = calculaSalario(S.config.salBase, mes.sal.pctMeta, mesNum(reg.mes), S.config.descFolha);
+    mes.sal.valorReal = Math.abs(reg.liquido - est.liquido) < 0.005 ? null : reg.liquido;
+    mes.sal.registrado = true;
+    if (reg.tipo === "salario-ferias" && reg.adtoFerias > 0)
+      mes.rendas.push({ id: uid(), desc: "Adiantamento de férias", valor: reg.adtoFerias,
+                        catId: "cat-ferias", holeriteId: h.id });
+  } else {
+    mes.rendas.push({ id: uid(), desc: TIPO_HOLERITE[reg.tipo].rotulo, valor: reg.liquido,
+                      catId: TIPO_HOLERITE[reg.tipo].cat, holeriteId: h.id });
+  }
+  return "aplicado";
+}
+
+async function importarHolerites(files) {
+  let aplicados = 0, historico = 0;
+  const falhas = [];
+  for (const f of files) {
+    try {
+      const reg = await Holerite.lerHolerite(new Uint8Array(await f.arrayBuffer()));
+      if (!reg.valido) throw new Error(reg.erros[0]);
+      if (aplicarHolerite(reg) === "historico") historico++; else aplicados++;
+    } catch (e) { falhas.push(f.name); console.warn("holerite não lido", f.name, e); }
+  }
+  salvar(); render();
+  const partes = [];
+  if (aplicados) partes.push(aplicados + " importado" + (aplicados === 1 ? "" : "s"));
+  if (historico) partes.push(historico + " só no histórico (mês gravado)");
+  toast(partes.length ? "Holerites: " + partes.join(", ") + "." : "Nenhum holerite importado.");
+  if (falhas.length) alert("Não consegui ler: " + falhas.join(", ") + ". Confira se é o PDF original do demonstrativo.");
+}
+
+function renderHolerites() {
+  const box = $("#lista-holerites");
+  if (!box) return;
+  const q = ($("#busca-holerite").value || "").trim().toLowerCase();
+  const todos = S.holerites.slice().sort((a, b) => b.mes.localeCompare(a.mes) || a.tipo.localeCompare(b.tipo));
+  if (todos.length === 0) { box.innerHTML = vazio("download", "Importe o PDF do demonstrativo: vira dados na hora.", "importar-holerite", "Importar PDF"); return; }
+  const lista = q ? todos.filter(h =>
+    (h.mes + " " + labelMes(h.mes) + " " + TIPO_HOLERITE[h.tipo].rotulo + " " + fmt(h.liquido)).toLowerCase().includes(q)) : todos;
+  box.innerHTML = (lista.length === 0 ? vazio("download", "Nada encontrado com essa busca.") :
+    `<ul class="lista">` + lista.map(h => `
+      <li><span class="ico-cat">${ico(TIPO_HOLERITE[h.tipo].icone)}</span>
+      <span class="info"><span class="nome">${esc(TIPO_HOLERITE[h.tipo].rotulo)}</span>
+      <span class="det">${labelMes(h.mes)}${h.premio > 0 ? " · prêmio " + fmt(h.premio) : ""}</span></span>
+      <span class="valor renda">${fmt(h.liquido)}</span>
+      <span class="acoes"><button data-ver-holerite="${h.id}" title="Detalhes">${ico("receipt")}</button><button data-rm-holerite="${h.id}" title="Excluir">${ico("trash-2")}</button></span></li>`).join("") + `</ul>`) +
+    `<p class="soft" style="margin:10px 0 0">${lista.length} de ${todos.length} holerites no histórico</p>`;
+}
+
+function dlgHolerite(h) {
+  const dlg = $("#dlg-item"), box = $("#dlg-campos");
+  $("#dlg-titulo").textContent = TIPO_HOLERITE[h.tipo].rotulo + " de " + labelMes(h.mes);
+  const bxAntigo = document.getElementById("dlg-excluir");
+  if (bxAntigo) bxAntigo.remove();
+  box.innerHTML = `<div class="table-scroll" style="grid-column:1/-1"><table>
+    <thead><tr><th>Verba</th><th>Vencimento</th><th>Desconto</th></tr></thead>
+    <tbody>${h.itens.map(i => `<tr><td>${esc(i.desc)}</td><td>${i.vencimento != null ? fmt(i.vencimento) : ""}</td><td>${i.desconto != null ? fmt(i.desconto) : ""}</td></tr>`).join("")}</tbody>
+    <tfoot><tr><td>Total</td><td>${fmt(h.vencimentos)}</td><td>${fmt(h.descontos)}</td></tr>
+    <tr><td>Líquido</td><td colspan="2">${fmt(h.liquido)}</td></tr>
+    ${h.fgts > 0 ? `<tr><td>FGTS (depósito do empregador)</td><td colspan="2">${fmt(h.fgts)}</td></tr>` : ""}</tfoot>
+  </table></div>`;
+  dlg.returnValue = "";
+  $("#dlg-form").onsubmit = () => {};
+  dlg.showModal();
+}
+
+/* ---------- Mapa (consultor de previsibilidade) ---------- */
+function mesesReais() { // meses com renda de verdade: gravados ou com salário registrado
+  return Object.keys(S.meses).filter(k => S.meses[k].status === "gravado" || S.meses[k].sal.registrado).sort();
+}
+
+function renderMapa() {
+  const vazioBox = $("#mapa-vazio");
+  if (!vazioBox) return;
+  const paineis = ["painel-mapa-ritmo", "painel-mapa-projecao", "painel-mapa-metas", "painel-mapa-cenarios", "painel-mapa-anos"];
+  const todos = mesesReais();
+  if (todos.length === 0) {
+    vazioBox.innerHTML = `<div class="panel">` + vazio("compass", "O Mapa nasce dos seus números reais. Importe holerites ou registre o salário do mês.", null, null) +
+      `<div class="btn-row" style="justify-content:center"><button class="btn primary" data-tela-ir="renda">Ir para Renda</button></div></div>`;
+    paineis.forEach(id => $("#" + id).style.display = "none");
+    return;
+  }
+  vazioBox.innerHTML = "";
+  paineis.forEach(id => $("#" + id).style.display = "");
+
+  const per = S.config.mapaPeriodo || 0;
+  const chaves = per > 0 ? todos.slice(-per) : todos;
+  const serie = chaves.map(k => ({ k, t: calcMes(k), gravado: S.meses[k].status === "gravado" }));
+  const media = arr => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+  const rendaMed = round2(media(serie.map(s => s.t.renda)));
+  const gravados = serie.filter(s => s.gravado);
+  const custoMed = round2(gravados.length ? media(gravados.map(s => s.t.custos)) : calcMes(chaveHoje()).custos);
+  const custoEstimado = gravados.length === 0;
+  const aporteMed = round2(gravados.length ? media(gravados.map(s => s.t.aportado)) : recomendacao(chaveHoje()).valor);
+  const naoEssMed = round2(gravados.length ? media(gravados.map(s => Math.max(0, s.t.custos - s.t.essenciais))) : 0);
+  const txPoupanca = rendaMed > 0 ? aporteMed / rendaMed * 100 : 0;
+
+  $("#mapa-filtros").innerHTML = [[12, "12 meses"], [24, "24 meses"], [0, "Tudo"]].map(([v, r]) =>
+    `<button class="btn${per === v ? " primary" : ""}" data-mapa-per="${v}">${r}</button>`).join("");
+
+  $("#mapa-ritmo").innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="k">Líquido médio/mês</div><div class="v">${fmt(rendaMed)}</div></div>
+      <div class="stat"><div class="k">Custos médios/mês${custoEstimado ? " (estimado)" : ""}</div><div class="v">${fmt(custoMed)}</div></div>
+      <div class="stat"><div class="k">Guardando/mês</div><div class="v">${fmt(aporteMed)}</div></div>
+      <div class="stat"><div class="k">Taxa de poupança</div><div class="v">${txPoupanca.toFixed(0)}%</div></div>
+    </div>
+    <p class="soft" style="margin:10px 0 0">Base: ${serie.length} ${serie.length === 1 ? "mês real" : "meses reais"} (${gravados.length} com custos gravados). Tudo pelo líquido que caiu na conta.</p>`;
+
+  const guardado = round2(S.metas.reduce((s, m) => s + m.guardado, 0));
+  const hoje = chaveHoje();
+  const mesAtualGravado = S.meses[hoje] && S.meses[hoje].status === "gravado";
+  const mesesRestAno = 12 - mesNum(hoje) + (mesAtualGravado ? 0 : 1);
+  const proj = n => fmt(round2(guardado + aporteMed * n));
+  $("#mapa-projecao").innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="k">Guardado hoje</div><div class="v">${fmt(guardado)}</div></div>
+      <div class="stat"><div class="k">Fim de ${hoje.slice(0, 4)}</div><div class="v">${proj(mesesRestAno)}</div></div>
+      <div class="stat"><div class="k">Em 1 ano</div><div class="v">${proj(12)}</div></div>
+      <div class="stat"><div class="k">Em 3 anos</div><div class="v">${proj(36)}</div></div>
+      <div class="stat"><div class="k">Em 5 anos</div><div class="v">${proj(60)}</div></div>
+    </div>
+    <p class="soft" style="margin:10px 0 0">Mantendo o ritmo de ${fmt(aporteMed)}/mês, sem contar rendimentos. Rendimento de investimentos entra por cima disso.</p>`;
+
+  const linhasMeta = S.metas.map(m => {
+    const ritmoMeta = round2(gravados.length ? media(gravados.map(s => {
+      const ap = (S.meses[s.k].aportes || []).find(a => a.metaId === m.id);
+      return ap ? ap.valor : 0;
+    })) : 0);
+    if (!(m.alvo > 0)) return `<div class="orc-item"><div class="orc-top"><span class="rotulo">${ico(m.icone)} ${esc(m.nome)}</span>
+      <span>${fmt(m.guardado)} acumulado · ritmo ${fmt(ritmoMeta)}/mês</span></div></div>`;
+    const falta = Math.max(0, m.alvo - m.guardado);
+    let quando;
+    if (falta === 0) quando = "completa";
+    else if (ritmoMeta > 0) { const n = Math.ceil(falta / ritmoMeta); quando = "completa em " + labelMes(addMeses(hoje, n)) + ` (${n} ${n === 1 ? "mês" : "meses"})`; }
+    else quando = "sem ritmo de aporte ainda";
+    const pct = Math.min(100, m.guardado / m.alvo * 100);
+    return `<div class="orc-item"><div class="orc-top"><span class="rotulo">${ico(m.icone)} ${esc(m.nome)}</span><span>${quando}</span></div>
+      <div class="barra"><div style="width:${pct}%"></div></div>
+      <div class="barra-leg"><span>${fmt(m.guardado)} de ${fmt(m.alvo)}</span><span>ritmo ${fmt(ritmoMeta)}/mês</span></div></div>`;
+  });
+  $("#mapa-metas").innerHTML = S.metas.length ? linhasMeta.join("") :
+    vazio("target", "Sem metas ainda. O Mapa mostra quando cada uma completa.", "meta", "Criar meta");
+
+  const reserva = metaReserva();
+  const cenarios = [];
+  const linhaCenario = (rot, extra) => {
+    const ritmo = aporteMed + extra;
+    let fecho = "";
+    if (reserva && reserva.alvo > 0 && reserva.guardado < reserva.alvo && ritmo > 0) {
+      const n = Math.ceil((reserva.alvo - reserva.guardado) / ritmo);
+      fecho = `reserva completa em ${labelMes(addMeses(hoje, n))}`;
+    } else fecho = `${fmt(round2(guardado + ritmo * 12))} em 1 ano`;
+    return `<div class="orc-item"><div class="orc-top"><span class="rotulo">${rot}</span><span>${fmt(round2(ritmo))}/mês · ${fecho}</span></div></div>`;
+  };
+  cenarios.push(linhaCenario("Mantendo o ritmo", 0));
+  if (naoEssMed > 0) {
+    cenarios.push(linhaCenario("Cortando 10% do estilo de vida", round2(naoEssMed * 0.10)));
+    cenarios.push(linhaCenario("Cortando 20% do estilo de vida", round2(naoEssMed * 0.20)));
+  }
+  cenarios.push(linhaCenario("Guardando R$ 500 a mais", 500));
+  let alavancas = "";
+  if (gravados.length) {
+    const somaCat = {};
+    gravados.forEach(s => Object.entries(s.t.porCat).forEach(([cid, v]) => {
+      const c = catById(cid);
+      if (c && !c.essencial && c.tipo === "despesa") somaCat[cid] = (somaCat[cid] || 0) + v;
+    }));
+    const top = Object.entries(somaCat).map(([cid, v]) => ({ c: catById(cid), med: v / gravados.length }))
+      .sort((a, b) => b.med - a.med).slice(0, 3);
+    if (top.length) alavancas = `<p class="soft" style="margin:12px 0 0">Maiores alavancas de corte: ` +
+      top.map(x => `${esc(x.c.nome)} (${fmt(round2(x.med))}/mês)`).join(" · ") + `</p>`;
+  }
+  $("#mapa-cenarios").innerHTML = cenarios.join("") + alavancas;
+
+  const anos = {};
+  todos.forEach(k => {
+    const y = k.slice(0, 4), t = calcMes(k), g = S.meses[k].status === "gravado";
+    anos[y] = anos[y] || { renda: 0, custos: 0, aportado: 0, n: 0, nG: 0 };
+    anos[y].renda += t.renda; anos[y].n++;
+    if (g) { anos[y].custos += t.custos; anos[y].aportado += t.aportado; anos[y].nG++; }
+  });
+  $("#mapa-anos").innerHTML = `<div class="table-scroll"><table>
+    <thead><tr><th>Ano</th><th>Meses</th><th>Líquido real</th><th>Média/mês</th><th>Custos (gravados)</th><th>Guardado</th></tr></thead>
+    <tbody>${Object.keys(anos).sort().map(y => {
+      const a = anos[y];
+      return `<tr><td>${y}</td><td>${a.n}</td><td>${fmt(round2(a.renda))}</td><td>${fmt(round2(a.renda / a.n))}</td>
+        <td>${a.nG ? fmt(round2(a.custos)) : "-"}</td><td>${a.nG ? fmt(round2(a.aportado)) : "-"}</td></tr>`;
+    }).join("")}</tbody></table></div>
+    <p class="soft" style="margin:10px 0 0">Líquido real = salários registrados (holerites) + outras rendas do mês.</p>`;
+}
+
 /* ================= AÇÕES / EVENTOS ================= */
 function camposCategoria(tipo) {
   return S.categorias.filter(c => c.tipo === tipo).map(c => ({ valor: c.id, label: c.nome }));
@@ -1009,11 +1240,24 @@ document.addEventListener("click", ev => {
   const d = b.dataset;
 
   if (d.abrir) {
-    const abre = { renda: dlgRenda, gasto: dlgGasto, fixo: dlgFixo, meta: dlgMeta, cat: dlgCategoria, salario: dlgSalario, conta: dlgConta }[d.abrir];
+    const abre = { renda: dlgRenda, gasto: dlgGasto, fixo: dlgFixo, meta: dlgMeta, cat: dlgCategoria, salario: dlgSalario, conta: dlgConta,
+                   "importar-holerite": () => $("#file-holerite").click() }[d.abrir];
     if (abre) abre(null);
     return;
   }
   if (d.telaIr) { trocaTela(d.telaIr); return; }
+  if (d.mapaPer !== undefined) { S.config.mapaPeriodo = Number(d.mapaPer); salvar(); render(); return; }
+  if (d.verHolerite) { const h = S.holerites.find(x => x.id === d.verHolerite); if (h) dlgHolerite(h); return; }
+  if (d.rmHolerite) {
+    const h = S.holerites.find(x => x.id === d.rmHolerite);
+    if (h && confirm("Excluir este holerite do histórico? As rendas criadas por ele saem do mês em aberto; o registro de salário permanece.")) {
+      const m = getMes(h.mes);
+      if (m.status !== "gravado") m.rendas = m.rendas.filter(r => r.holeriteId !== h.id);
+      S.holerites = S.holerites.filter(x => x.id !== h.id);
+      salvar(); render();
+    }
+    return;
+  }
   if (d.pago !== undefined && b.type === "checkbox") {
     mes.fixosStatus[d.pago] = mes.fixosStatus[d.pago] || {};
     mes.fixosStatus[d.pago].pago = b.checked;
@@ -1162,6 +1406,15 @@ $("#btn-add-conta").onclick = () => dlgConta(null);
 
 $("#mes-prev").onclick = () => { mesVisto = addMeses(mesVisto, -1); render(); };
 $("#mes-next").onclick = () => { mesVisto = addMeses(mesVisto, 1); render(); };
+
+/* holerites */
+$("#btn-import-holerite").onclick = () => $("#file-holerite").click();
+$("#file-holerite").addEventListener("change", async ev => {
+  const files = [...ev.target.files];
+  ev.target.value = "";
+  if (files.length) await importarHolerites(files);
+});
+$("#busca-holerite").addEventListener("input", renderHolerites);
 
 document.querySelectorAll(".nav-lateral button").forEach(b => b.onclick = () => trocaTela(b.dataset.tela));
 $("#btn-menu").onclick = abreDrawer;

@@ -17,11 +17,17 @@ Chave única do localStorage: `meubolso.v1`. Salvo integralmente a cada ação
   custosFixos: [{ id, nome, valor, catId, dia, assinatura, lembrete, variavel, ativo }],
   metas: [{ id, nome, icone, alvo, prazo, guardado, tipoReserva?, tipoInvest? }],
   contas: [{ id, nome, icone, saldo }],
+  holerites: [{ id, tipo, mes, liquido, vencimentos, descontos, inss, irrf,
+                outros, fgts, premio, base, adtoFerias, itens[], em }],
   meses: { "AAAA-MM": { status, sal: { pctMeta, valorReal, registrado },
                         rendas[], gastos[], fixosStatus{}, aportes[],
                         snapshot: null | { tot, fixos, em, guardadoTotal, contasTotal } } }
 }
 ```
+
+Rendas criadas por holerite carregam `holeriteId` (permite substituição limpa
+na reimportação e na exclusão). `migrar` garante `holerites: []` e
+`config.mapaPeriodo` em backups antigos.
 
 Estado corrompido no load: console.warn e recomeço no default (sem crash).
 
