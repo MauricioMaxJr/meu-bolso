@@ -78,7 +78,7 @@ mono ? ok("prêmios monotônicos nas 3 colunas") : erro("tabela de prêmios NÃO
 /* ---------- 2. livro-razão ---------- */
 console.log("\n== 2. LIVRO-RAZÃO (canonicos.json) ==");
 const hashAssets = createHash("sha256");
-for (const f of ["index.html", "app.js", "app.css", "icons.js", "holerite.js", "sw.js", "manifest.webmanifest"])
+for (const f of ["index.html", "app.js", "app.css", "icons.js", "holerite.js", "extrato.js", "sw.js", "manifest.webmanifest"])
   hashAssets.update(readFileSync(join(RAIZ, f)));
 const derivado = {
   aviso: "GERADO por verificar.mjs --selar. NÃO editar na mão: é derivado do código.",
@@ -157,7 +157,7 @@ quebradas.length ? erro("IDs sem alvo: " + quebradas.join(", ")) : ok(`${refs.si
 /* ---------- 6. encoding ---------- */
 console.log("\n== 6. ENCODING ==");
 let encRuim = 0;
-for (const f of ["app.js", "app.css", "index.html", "icons.js", "holerite.js", "sw.js", "manifest.webmanifest"]) {
+for (const f of ["app.js", "app.css", "index.html", "icons.js", "holerite.js", "extrato.js", "sw.js", "manifest.webmanifest"]) {
   const buf = readFileSync(join(RAIZ, f));
   if (buf.toString("utf8").includes("�")) { encRuim++; erro(f + ": bytes inválidos em UTF-8"); }
   if (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) { encRuim++; erro(f + ": BOM indevido no início do arquivo"); }

@@ -61,7 +61,7 @@ else { erro("verificar.mjs VERMELHO — saída:"); console.log(v.stdout + v.stde
 const corteIcones = appjs.indexOf("/* ================= ÍCONES");
 const corteTema = appjs.indexOf("/* ================= TEMA");
 const M = new Function(appjs.slice(0, corteIcones) +
-  "; return { round2, calcINSS, calcIRRF, calculaSalario, tipoDoMes, faixaDaMeta, INSS_FAIXAS, TETO_INSS, IRRF_FAIXAS, FAIXAS_META };")();
+  "; return { round2, calcINSS, calcIRRF, calculaSalario, calcula13, tipoDoMes, faixaDaMeta, INSS_FAIXAS, TETO_INSS, IRRF_FAIXAS, FAIXAS_META };")();
 const lsStub = { getItem: () => null, setItem: () => {} };
 const E = new Function("localStorage", "console", "window",
   appjs.slice(corteIcones, corteTema) + "; return { categoriasDefault, estadoDefault, migrar };")(lsStub, console, {});
@@ -164,6 +164,9 @@ else {
     if (d.liquidoTotal !== M.round2(base - C.calcINSS(base) - C.calcIRRF(base - C.calcINSS(base)))) ok13 = false;
   }
   ok13 ? ok("13º da calculadora: parcelas fecham com a identidade contábil nas 4 bases") : erro("13º da calculadora não fecha");
+  let par13 = true;
+  for (const base of [10000, 12000, 14000, 16000]) if (!igual(M.calcula13(base), C.calcula13(base))) par13 = false;
+  par13 ? ok("calcula13 idêntico entre app e calculadora nas 4 bases") : erro("calcula13 DIVERGE entre app e calculadora");
 }
 
 /* ---------- 3. estado e migração ---------- */
@@ -262,7 +265,7 @@ console.log("\n== 5. UI ESTÁTICA ==");
     if (/\besc\(/.test(m[1])) continue;
     const linha = appjs.slice(0, m.index).split("\n").length;
     const linhaTxt = appjs.split("\n")[linha - 1];
-    if (!linhaTxt.includes("txt:")) inseguros.push(`linha ${linha}: \${${m[1]}}`);
+    if (!linhaTxt.includes("txt:") && !linhaTxt.includes("csv +=")) inseguros.push(`linha ${linha}: \${${m[1]}}`); // txt: passa por esc no dicaHTML; csv não é HTML
   }
   inseguros.length ? erro("interpolação de nome/descrição sem esc() em HTML: " + inseguros.join(" | "))
                    : ok("toda interpolação de nome/descrição em HTML passa por esc() (dicas escapadas em dicaHTML)");
@@ -394,6 +397,20 @@ console.log("\n== 9. PARSER HOSTIL ==");
         ? ok(`PDF truncado em ${frac * 100}%: aceito, prova contábil fechada e dados idênticos ao arquivo íntegro`)
         : erro(`PDF truncado em ${frac * 100}% aceito com dados DIVERGENTES do íntegro`);
     }
+  }
+
+  if (existsSync(join(RAIZ, "extrato.js"))) {
+    (0, eval)(ler("extrato.js"));
+    const ofx = "<OFX><STMTTRN><DTPOSTED>20260705120000<TRNAMT>-123.45<MEMO>UBER TRIP</STMTTRN><STMTTRN><DTPOSTED>20260706<TRNAMT>1000.00<NAME>PIX RECEBIDO</STMTTRN></OFX>";
+    const ro = globalThis.Extrato.lerExtrato(ofx);
+    (ro.valido && ro.transacoes.length === 2 && ro.transacoes[0].valor === -123.45 && ro.transacoes[0].data === "2026-07-05")
+      ? ok("extrato OFX sintético: 2 transações com data e valor exatos") : erro("extrato OFX errado: " + JSON.stringify(ro));
+    const csv = "Data;Descrição;Valor\n05/07/2026;UBER TRIP;-24,90\n06/07/2026;MERCADO GRANDE;1.234,56";
+    const rc = globalThis.Extrato.lerExtrato(csv);
+    (rc.valido && rc.transacoes.length === 2 && rc.transacoes[0].valor === -24.9 && rc.transacoes[1].valor === 1234.56 && rc.transacoes[0].data === "2026-07-05")
+      ? ok("extrato CSV brasileiro (vírgula decimal, milhar com ponto): valores exatos") : erro("extrato CSV errado: " + JSON.stringify(rc));
+    const ruins = ["", "texto solto sem cara de extrato", "a;b;c\n1;2;3"].filter(t => globalThis.Extrato.lerExtrato(t).valido);
+    ruins.length ? erro("extrato aceitou entrada hostil") : ok("extrato recusa vazio, texto solto e CSV sem colunas de banco");
   }
 }
 

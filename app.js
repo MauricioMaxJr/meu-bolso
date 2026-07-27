@@ -79,6 +79,13 @@ function calculaSalario(base, pctMeta, mesNum, outrosFolha) {
   const liquido = round2(bruto - inss - irrf - outrosFolha);
   return { tipo, faixa: fx, premio, bruto, inss, irrf, outrosFolha, liquido };
 }
+function calcula13(base) { // prêmio não integra o 13º; idêntico à calculadora (paridade)
+  const inss = calcINSS(base);
+  const irrf = calcIRRF(base - inss);
+  const parcela1 = round2(base / 2);                       // novembro, sem descontos
+  const parcela2 = round2(base - inss - irrf - parcela1);  // dezembro
+  return { parcela1, parcela2, inss, irrf, liquidoTotal: round2(parcela1 + parcela2) };
+}
 
 /* ================= ÍCONES ================= */
 const ico = n => `<svg class="ic" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${(window.ICONES && ICONES[n]) || ICONES["package"]}</svg>`;
@@ -153,12 +160,16 @@ function estadoDefault() {
       reservaMeses: 6,
       tema: "auto",
       mapaPeriodo: 12,
+      avisos: false,          // avisos de vencimento no aparelho (disparam ao abrir o app)
+      ultimoAviso: null,      // "AAAA-MM-DD" do último aviso (1 por dia)
+      guardiaoUltimo: null,   // nome do último backup gravado pelo guardião
     },
     categorias: categoriasDefault(),
     custosFixos: [],
     metas: [],
     contas: [],               // {id,nome,icone,saldo} - onde o dinheiro está
     holerites: [],            // extratos importados de PDF (o arquivo não é salvo)
+    aprendizado: {},          // descrição normalizada -> catId (categoria que aprende)
     meses: {},
   };
 }
@@ -166,6 +177,7 @@ function estadoDefault() {
 function migrar(st) {
   if (!st.contas) st.contas = []; // backups antigos (v1 ou v2 sem Contas) não podem quebrar o render
   if (!st.holerites) st.holerites = [];
+  if (!st.aprendizado) st.aprendizado = {};
   if (st.config && st.config.mapaPeriodo == null) st.config.mapaPeriodo = 12;
   if (st.version === 2) return st;
   // v1 -> v2: emojis viram ícones Lucide, categorias novas entram, tema
@@ -299,6 +311,18 @@ function essenciaisReferencia(chave) {
   return calcMes(chave).essenciais;
 }
 
+function custoMedioReal() { // média dos custos dos últimos 3 meses gravados; sem histórico, mês atual
+  const gravados = Object.keys(S.meses).filter(k => S.meses[k].status === "gravado" && S.meses[k].snapshot).sort().reverse().slice(0, 3);
+  if (gravados.length) return round2(gravados.reduce((s, k) => s + (S.meses[k].snapshot.tot.custos || 0), 0) / gravados.length);
+  return calcMes(chaveHoje()).custos;
+}
+function colchaoMeses() { // COLCHÃO: quantos meses o dinheiro das Contas banca o custo real
+  const total = S.contas.reduce((s, c) => s + c.saldo, 0);
+  const custo = custoMedioReal();
+  if (!(total > 0) || !(custo > 0)) return null;
+  return total / custo;
+}
+
 function recomendacao(chave) {
   const t = calcMes(chave);
   const cfg = S.config;
@@ -351,6 +375,15 @@ function gerarDicas(chave) {
       dicas.push({ nv: "info", ico: "tv", txt: `Assinaturas: ${fmt(totAssin)}/mês (${fmt(totAssin * 12)}/ano).` });
   }
 
+  const ultimoGravado = Object.keys(S.meses).filter(k => k < chave && S.meses[k].status === "gravado" && S.meses[k].snapshot).sort().pop();
+  if (ultimoGravado) { // vigia de assinatura: preço subiu desde o último mês gravado?
+    fixosDoMes(chave).filter(f => f.assinatura).forEach(f => {
+      const ant = (S.meses[ultimoGravado].snapshot.fixos || []).find(x => x.id === f.id);
+      if (ant && f.valorMes > ant.valorMes)
+        dicas.push({ nv: "warning", ico: "tv", txt: `${f.nome} subiu de ${fmt(ant.valorMes)} para ${fmt(f.valorMes)}. Vale conferir.` });
+    });
+  }
+
   const gravados = Object.keys(S.meses).filter(k => k !== chave && S.meses[k].status === "gravado" && S.meses[k].snapshot).sort().reverse().slice(0, 3);
   if (gravados.length >= 2) {
     Object.entries(t.porCat).forEach(([cid, v]) => {
@@ -396,6 +429,7 @@ function gravarMes(chave) {
   mes.snapshot.guardadoTotal = round2(S.metas.reduce((s, m) => s + m.guardado, 0));
   mes.snapshot.contasTotal = round2(S.contas.reduce((s, c) => s + c.saldo, 0));
   salvar(); render();
+  guardiaoSalvar("auto"); // backup guardião: cópia automática a cada mês gravado
   toast("Mês gravado. Aportes somados às metas.");
 }
 function reabrirMes(chave) {
@@ -578,6 +612,7 @@ function renderInicio() {
   const salOk = t.salRegistrado || mes.status === "gravado";
   const sobraReal = round2(t.renda - t.custos - r.valor);
   const sobra = Math.max(0, sobraReal); // nada fica negativo
+  const colchao = colchaoMeses();
 
   $("#cards-resumo").innerHTML = `
     <div class="card"><div class="label">Renda do mês</div><div class="value">${fmt(t.renda)}</div>
@@ -587,7 +622,9 @@ function renderInicio() {
     <div class="card destaque"><div class="label">Guardar</div><div class="value">${fmt(r.valor)}</div>
       <div class="sub">aportado ${fmt(t.aportado)}</div></div>
     <div class="card"><div class="label">Sobra livre</div><div class="value">${fmt(sobra)}</div>
-      <div class="sub">${sobraReal < 0 ? `<span style="color:var(--danger)">passou ${fmt(-sobraReal)} do disponível</span>` : "após custos e guardar"}</div></div>`;
+      <div class="sub">${sobraReal < 0 ? `<span style="color:var(--danger)">passou ${fmt(-sobraReal)} do disponível</span>` : "após custos e guardar"}</div></div>
+    <div class="card"><div class="label">Colchão</div><div class="value"${colchao != null && colchao >= 1 ? ' style="color:var(--positivo)"' : ""}>${colchao != null ? colchao.toFixed(1).replace(".", ",") + " meses" : "-"}</div>
+      <div class="sub">${colchao != null ? "contas cobrem o custo médio" : "cadastre contas e custos"}</div></div>`;
 
   const pisoUso = t.piso > 0 ? Math.min(100, t.essenciais / t.piso * 100) : 0;
   $("#painel-recomendacao").innerHTML = `
@@ -822,7 +859,7 @@ function renderDicas() {
   $("#painel-assinaturas").innerHTML = assin.length === 0 ? vazio("tv", "Nenhuma assinatura cadastrada.", "fixo", "Adicionar custo fixo") :
     `<ul class="lista">` + assin.map(f => `
       <li><span class="ico-cat">${ico(catById(f.catId).icone)}</span>
-      <span class="info"><span class="nome">${esc(f.nome)}</span><span class="det">${fmt(f.valor * 12)}/ano</span></span>
+      <span class="info"><span class="nome">${esc(f.nome)}</span><span class="det">${fmt(f.valor * 12)}/ano${f.dia ? " · vence dia " + f.dia : ""}</span></span>
       <span class="valor">${fmt(f.valor)}/mês</span></li>`).join("") +
     `</ul><p class="soft" style="margin-top:10px">Total: <strong>${fmt(tot)}/mês = ${fmt(tot * 12)}/ano</strong></p>`;
 }
@@ -847,6 +884,14 @@ function renderConfig() {
       </div>
     </div>`).join("") +
     `<p class="soft" style="margin:12px 0 0">Toque numa categoria para editar ou excluir.</p>`;
+
+  const gs = $("#guardiao-status");
+  if (gs) gs.textContent = !window.showDirectoryPicker ? "Guardião indisponível neste navegador."
+    : S.config.guardiaoUltimo ? "Guardião ativo. Última cópia: " + S.config.guardiaoUltimo
+    : "Escolha uma pasta e o backup sai sozinho a cada mês gravado.";
+  const ba = $("#btn-avisos");
+  if (ba) ba.textContent = S.config.avisos && typeof Notification !== "undefined" && Notification.permission === "granted"
+    ? "Desativar avisos" : "Ativar avisos";
 }
 
 /* ================= GRÁFICOS (SVG, paleta validada) ================= */
@@ -1102,6 +1147,138 @@ function dlgHolerite(h) {
   dlg.showModal();
 }
 
+/* ---------- Categoria que aprende ---------- */
+function aprender(desc, catId) { // descrição repetida lembra a categoria
+  if (!desc || !catId) return;
+  S.aprendizado[desc.trim().toLowerCase()] = catId;
+  const ks = Object.keys(S.aprendizado);
+  if (ks.length > 500) delete S.aprendizado[ks[0]];
+}
+
+/* ---------- Backup Guardião (cópia automática em pasta local) ---------- */
+function idbGuardiao(modo, valor) { // o handle da pasta não cabe no localStorage
+  return new Promise(res => {
+    try {
+      const req = indexedDB.open("meubolso-guardiao", 1);
+      req.onupgradeneeded = () => req.result.createObjectStore("h");
+      req.onerror = () => res(null);
+      req.onsuccess = () => {
+        const tx = req.result.transaction("h", modo === "gravar" ? "readwrite" : "readonly");
+        const r = modo === "gravar" ? tx.objectStore("h").put(valor, "pasta") : tx.objectStore("h").get("pasta");
+        r.onsuccess = () => res(modo === "gravar" ? true : r.result);
+        r.onerror = () => res(null);
+      };
+    } catch { res(null); }
+  });
+}
+async function guardiaoSalvar(origem) {
+  const pasta = await idbGuardiao("ler");
+  if (!pasta) return;
+  try {
+    if (await pasta.queryPermission({ mode: "readwrite" }) !== "granted" &&
+        await pasta.requestPermission({ mode: "readwrite" }) !== "granted") return;
+    const d = new Date();
+    const nome = "meubolso-backup-" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".json";
+    const arq = await pasta.getFileHandle(nome, { create: true });
+    const w = await arq.createWritable();
+    await w.write(JSON.stringify(S, null, 1)); await w.close();
+    const copias = [];
+    for await (const [n] of pasta.entries())
+      if (/^meubolso-backup-\d{4}-\d{2}-\d{2}\.json$/.test(n)) copias.push(n);
+    for (const n of copias.sort().slice(0, Math.max(0, copias.length - 6))) await pasta.removeEntry(n); // guarda as últimas 6
+    S.config.guardiaoUltimo = nome; salvar();
+    if (origem === "botao") { render(); toast("Backup guardado na pasta."); }
+  } catch { if (origem === "botao") toast("Não consegui gravar na pasta do guardião."); }
+}
+
+/* ---------- Avisos de vencimento (disparam ao abrir o app) ---------- */
+async function avisarVencimentos(forcar = false) {
+  if (!S.config.avisos || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  const agora = new Date();
+  const marca = agora.getFullYear() + "-" + String(agora.getMonth() + 1).padStart(2, "0") + "-" + String(agora.getDate()).padStart(2, "0");
+  if (!forcar && S.config.ultimoAviso === marca) return; // um aviso por dia
+  const pend = fixosDoMes(chaveHoje()).filter(f => f.lembrete && !f.pago && f.dia && f.dia <= agora.getDate() + 3);
+  if (!pend.length) return;
+  S.config.ultimoAviso = marca; salvar();
+  const corpo = pend.slice(0, 3).map(f => f.nome.toUpperCase() + " (DIA " + f.dia + ")").join(", ") +
+    (pend.length > 3 ? " E MAIS " + (pend.length - 3) : "");
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg && reg.showNotification) reg.showNotification("MEU BOLSO: CONTAS A PAGAR", { body: corpo, icon: "icons/icon-192.png" });
+    else new Notification("MEU BOLSO: CONTAS A PAGAR", { body: corpo, icon: "icons/icon-192.png" });
+  } catch {}
+}
+
+/* ---------- Importar Extrato (CSV/OFX vira gastos, com prévia) ---------- */
+const CHAVES_CATEGORIA = [
+  [/uber|99 ?app|taxi|cabify|metr[oô]|onibus/i, "transporte"],
+  [/posto|ipiranga|shell|petrobras|combust/i, "combustivel"],
+  [/ifood|rappi|restaur|lanch|pizza|burg|padaria|cafeteria/i, "restaurantes"],
+  [/mercado|supermerc|atacad|carrefour|assai|hortifruti/i, "mercado"],
+  [/farmac|droga ?(raia|sil)|drogaria|pacheco/i, "farmacia"],
+  [/netflix|spotify|prime video|disney|hbo|globoplay|deezer|youtube premium/i, "assinaturas"],
+  [/energia|enel|light\b|cemig|copel|celpe|sabesp|embasa|saneago|\bgas\b/i, "contas"],
+  [/vivo\b|claro\b|\btim\b|\boi\b|internet/i, "internet"],
+  [/academia|smart ?fit|gympass/i, "academia"],
+  [/veterin|petshop|petz|cobasi/i, "pets"],
+];
+function sugereCategoria(desc) {
+  const aprendida = S.aprendizado[desc.trim().toLowerCase()];
+  if (aprendida && S.categorias.some(c => c.id === aprendida && c.tipo === "despesa")) return aprendida;
+  for (const [re, cat] of CHAVES_CATEGORIA) if (re.test(desc)) return cat;
+  return "outros";
+}
+async function importarExtrato(file) {
+  const r = Extrato.lerExtrato(await file.text());
+  if (!r.valido) { alert("Não consegui ler o extrato: " + r.erros[0]); return; }
+  const debitos = r.transacoes.filter(t => t.valor < 0).map(t => ({
+    mes: t.data.slice(0, 7), dia: parseInt(t.data.slice(8, 10), 10),
+    desc: t.desc, valor: round2(-t.valor), catId: sugereCategoria(t.desc),
+  }));
+  const creditos = r.transacoes.length - debitos.length;
+  if (!debitos.length) { alert("O arquivo não tem débitos para importar" + (creditos ? " (créditos não viram gasto)." : ".")); return; }
+  debitos.forEach(t => {
+    const mes = S.meses[t.mes];
+    t.gravado = !!(mes && mes.status === "gravado");
+    t.duplicado = !t.gravado && !!(mes && mes.gastos.some(g =>
+      g.valor === t.valor && (g.dia || 0) === (t.dia || 0) && g.desc.trim().toLowerCase() === t.desc.trim().toLowerCase()));
+  });
+  dlgPreviaExtrato(debitos, creditos);
+}
+function dlgPreviaExtrato(itens, creditos) {
+  const dlg = $("#dlg-item"), box = $("#dlg-campos");
+  $("#dlg-titulo").textContent = "Importar extrato: " + itens.length + " débitos";
+  const bxAntigo = document.getElementById("dlg-excluir");
+  if (bxAntigo) bxAntigo.remove();
+  const cats = S.categorias.filter(c => c.tipo === "despesa");
+  box.innerHTML = `<div class="table-scroll" style="grid-column:1/-1;max-height:340px;overflow:auto"><table>
+    <thead><tr><th></th><th>Dia</th><th>Descrição</th><th>Valor</th><th>Categoria</th></tr></thead>
+    <tbody>${itens.map((t, i) => `<tr>
+      <td><input type="checkbox" data-ex-marca="${i}" ${t.gravado || t.duplicado ? "" : "checked"} ${t.gravado ? "disabled" : ""}></td>
+      <td>${t.mes.slice(5)}/${String(t.dia).padStart(2, "0")}</td>
+      <td>${esc(t.desc)}${t.duplicado ? ' <span class="selo">repetido?</span>' : ""}${t.gravado ? ' <span class="selo">mês gravado</span>' : ""}</td>
+      <td>${fmt(t.valor)}</td>
+      <td><select data-ex-cat="${i}" ${t.gravado ? "disabled" : ""}>${cats.map(c => `<option value="${c.id}"${c.id === t.catId ? " selected" : ""}>${esc(c.nome)}</option>`).join("")}</select></td>
+    </tr>`).join("")}</tbody></table></div>
+    <p class="soft" style="grid-column:1/-1">${creditos ? creditos + " créditos ignorados (não viram gasto). " : ""}Meses gravados ficam de fora. Desmarque o que não quiser.</p>`;
+  dlg.returnValue = "";
+  $("#dlg-form").onsubmit = (ev) => {
+    if (dlg.returnValue === "cancel" || ev.submitter && ev.submitter.value === "cancel") return;
+    let criados = 0;
+    itens.forEach((t, i) => {
+      const marca = box.querySelector(`[data-ex-marca="${i}"]`);
+      if (!marca || !marca.checked || t.gravado) return;
+      const catId = box.querySelector(`[data-ex-cat="${i}"]`).value;
+      getMes(t.mes).gastos.push({ id: uid(), desc: t.desc, valor: t.valor, catId, dia: t.dia || null });
+      aprender(t.desc, catId);
+      criados++;
+    });
+    salvar(); render();
+    toast(criados ? criados + " gastos importados do extrato." : "Nada importado.");
+  };
+  dlg.showModal();
+}
+
 /* ---------- Mapa (consultor de previsibilidade) ---------- */
 function mesesReais() { // meses com renda de verdade: gravados ou com salário registrado
   return Object.keys(S.meses).filter(k => S.meses[k].status === "gravado" || S.meses[k].sal.registrado).sort();
@@ -1110,7 +1287,7 @@ function mesesReais() { // meses com renda de verdade: gravados ou com salário 
 function renderMapa() {
   const vazioBox = $("#mapa-vazio");
   if (!vazioBox) return;
-  const paineis = ["painel-mapa-ritmo", "painel-mapa-projecao", "painel-mapa-metas", "painel-mapa-cenarios", "painel-mapa-anos"];
+  const paineis = ["painel-mapa-ritmo", "painel-mapa-projecao", "painel-mapa-13", "painel-mapa-metas", "painel-mapa-cenarios", "painel-mapa-anos"];
   const todos = mesesReais();
   if (todos.length === 0) {
     vazioBox.innerHTML = `<div class="panel">` + vazio("compass", "O Mapa nasce dos seus números reais. Importe holerites ou registre o salário do mês.", null, null) +
@@ -1159,6 +1336,18 @@ function renderMapa() {
       <div class="stat"><div class="k">Em 5 anos</div><div class="v">${proj(60)}</div></div>
     </div>
     <p class="soft" style="margin:10px 0 0">Mantendo o ritmo de ${fmt(aporteMed)}/mês, sem contar rendimentos. Rendimento de investimentos entra por cima disso.</p>`;
+
+  const d13 = calcula13(S.config.salBase);
+  const feriasReais = S.holerites.filter(h => h.tipo === "salario-ferias" && h.adtoFerias > 0).map(h => h.adtoFerias);
+  const feriasMed = feriasReais.length ? round2(feriasReais.reduce((s, v) => s + v, 0) / feriasReais.length) : null;
+  $("#mapa-13").innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="k">13º 1ª parcela (nov)</div><div class="v">${fmt(d13.parcela1)}</div></div>
+      <div class="stat"><div class="k">13º 2ª parcela (dez)</div><div class="v">${fmt(d13.parcela2)}</div></div>
+      <div class="stat"><div class="k">13º líquido total</div><div class="v">${fmt(d13.liquidoTotal)}</div></div>
+      <div class="stat"><div class="k">Férias (média real)</div><div class="v">${feriasMed != null ? fmt(feriasMed) : "-"}</div></div>
+    </div>
+    <p class="soft" style="margin:10px 0 0">${mesNum(hoje) <= 11 ? `Fim de ${hoje.slice(0, 4)} somando o 13º: <strong>${fmt(round2(guardado + aporteMed * mesesRestAno + d13.liquidoTotal))}</strong>. ` : ""}Prêmio não integra o 13º. ${feriasMed != null ? "Férias: média dos adiantamentos reais dos seus holerites (set/out)." : "Importe holerites de férias para ver a média real."}</p>`;
 
   const linhasMeta = S.metas.map(m => {
     const ritmoMeta = round2(gravados.length ? media(gravados.map(s => {
@@ -1330,8 +1519,14 @@ function dlgGasto(g) {
     const mes = getMes(mesVisto);
     if (g) Object.assign(g, out);
     else mes.gastos.push({ id: uid(), ...out });
+    aprender(out.desc, out.catId);
     salvar(); render();
   }, g || { dia: new Date().getDate() });
+  const inpDesc = $("#f-desc");
+  if (inpDesc && !g) inpDesc.addEventListener("input", () => { // categoria que aprende
+    const cat = S.aprendizado[inpDesc.value.trim().toLowerCase()];
+    if (cat && S.categorias.some(c => c.id === cat && c.tipo === "despesa")) $("#f-catId").value = cat;
+  });
 }
 function dlgFixo(f) {
   abrirDialog(f ? "Editar custo fixo" : "Novo custo fixo", [
@@ -1410,6 +1605,14 @@ $("#file-holerite").addEventListener("change", async ev => {
 });
 $("#busca-holerite").addEventListener("input", renderHolerites);
 
+/* extrato bancário */
+$("#btn-import-extrato").onclick = () => $("#file-extrato").click();
+$("#file-extrato").addEventListener("change", async ev => {
+  const f = ev.target.files[0];
+  ev.target.value = "";
+  if (f) await importarExtrato(f);
+});
+
 document.querySelectorAll(".nav-lateral button").forEach(b => b.onclick = () => trocaTela(b.dataset.tela));
 $("#btn-menu").onclick = abreDrawer;
 $("#overlay").onclick = fechaDrawer;
@@ -1483,6 +1686,40 @@ $("#btn-reset").onclick = () => {
     S = estadoDefault(); salvar(); aplicarTema(); render(); toast("Tudo zerado.");
   }
 };
+$("#btn-csv-detalhado").onclick = () => {
+  const keys = Object.keys(S.meses).filter(k => S.meses[k].status === "gravado" && S.meses[k].snapshot).sort();
+  if (!keys.length) { toast("Grave um mês primeiro."); return; }
+  const num = v => (Math.round((v || 0) * 100) / 100).toFixed(2).replace(".", ",");
+  let csv = "﻿Mês;Grupo;Categoria;Valor\n";
+  keys.forEach(k => {
+    const tt = S.meses[k].snapshot.tot;
+    if (tt.salLiq > 0) csv += `${labelMes(k)};Renda;Salário;${num(tt.salLiq)}\n`;
+    S.meses[k].rendas.forEach(r => csv += `${labelMes(k)};Renda;${catById(r.catId).nome};${num(r.valor)}\n`);
+    Object.entries(tt.porCat).forEach(([cid, v]) => csv += `${labelMes(k)};Custo;${catById(cid).nome};${num(v)}\n`);
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "meubolso-detalhado.csv"; a.click();
+  URL.revokeObjectURL(a.href);
+};
+$("#btn-guardiao").onclick = async () => {
+  if (!window.showDirectoryPicker) { toast("Este navegador não permite pasta automática."); return; }
+  try {
+    const pasta = await showDirectoryPicker({ mode: "readwrite" });
+    await idbGuardiao("gravar", pasta);
+    await guardiaoSalvar("botao");
+  } catch {}
+};
+$("#btn-avisos").onclick = async () => {
+  if (typeof Notification === "undefined") { toast("Este navegador não tem avisos."); return; }
+  if (S.config.avisos && Notification.permission === "granted") {
+    S.config.avisos = false; salvar(); render(); toast("Avisos desativados."); return;
+  }
+  const p = await Notification.requestPermission();
+  if (p !== "granted") { toast("Permissão de aviso negada no navegador."); return; }
+  S.config.avisos = true; salvar(); render(); toast("Avisos ativos. Disparam ao abrir o app.");
+  avisarVencimentos(true);
+};
 
 /* ================= PWA ================= */
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
@@ -1494,3 +1731,4 @@ document.querySelectorAll("[data-ic]").forEach(e => e.insertAdjacentHTML("afterb
 aplicarTema();
 salvar(); // persiste migração, se houve
 render();
+avisarVencimentos();

@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Meu Bolso">
-<link rel="stylesheet" href="app.css?v=11">
+<link rel="stylesheet" href="app.css?v=12">
 </head>
 <body>
 
@@ -111,8 +111,13 @@
       <div class="panel">
         <div class="panel-head">
           <h2 data-ic="receipt">Gastos avulsos</h2>
-          <button class="btn primary" id="btn-add-gasto">Adicionar</button>
+          <div class="btn-row" style="margin:0">
+            <button class="btn" id="btn-import-extrato">Importar extrato</button>
+            <button class="btn primary" id="btn-add-gasto">Adicionar</button>
+          </div>
         </div>
+        <p class="soft">O extrato do banco (CSV ou OFX) vira gastos, com prévia. O arquivo não fica salvo.</p>
+        <input type="file" id="file-extrato" accept=".ofx,.csv,.txt" hidden>
         <ul class="lista" id="lista-gastos"></ul>
       </div>
       <div class="panel">
@@ -171,6 +176,7 @@
         <div id="chart-poupanca"></div>
       </div>
       <div id="painel-anos"></div>
+      <div class="btn-row"><button class="btn" id="btn-csv-detalhado">Exportar planilha detalhada</button></div>
     </section>
 
     <!-- ================= MAPA ================= -->
@@ -186,6 +192,10 @@
       <div class="panel" id="painel-mapa-projecao">
         <h2 data-ic="piggy-bank">Onde você chega</h2>
         <div id="mapa-projecao"></div>
+      </div>
+      <div class="panel" id="painel-mapa-13">
+        <h2 data-ic="calendar-check">13º e férias</h2>
+        <div id="mapa-13"></div>
       </div>
       <div class="panel" id="painel-mapa-metas">
         <h2 data-ic="target">Metas no ritmo atual</h2>
@@ -253,9 +263,16 @@
           <button class="btn" id="btn-export">Exportar backup</button>
           <button class="btn" id="btn-import">Importar backup</button>
           <button class="btn" id="btn-csv">Exportar planilha (CSV)</button>
+          <button class="btn" id="btn-guardiao">Pasta do guardião</button>
           <input type="file" id="file-import" accept="application/json" hidden>
           <button class="btn danger" id="btn-reset">Zerar tudo</button>
         </div>
+        <p class="soft" id="guardiao-status" style="margin-top:10px"></p>
+      </div>
+      <div class="panel">
+        <h2 data-ic="bell">Avisos</h2>
+        <p class="soft">Avisa das contas com lembrete perto do vencimento, ao abrir o app.</p>
+        <div class="btn-row"><button class="btn" id="btn-avisos">Ativar avisos</button></div>
       </div>
     </section>
   </main>
@@ -277,8 +294,9 @@
 <div id="chart-tooltip" class="chart-tooltip" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
-<script src="icons.js?v=11"></script>
-<script src="holerite.js?v=11"></script>
-<script src="app.js?v=11"></script>
+<script src="icons.js?v=12"></script>
+<script src="holerite.js?v=12"></script>
+<script src="extrato.js?v=12"></script>
+<script src="app.js?v=12"></script>
 </body>
 </html>

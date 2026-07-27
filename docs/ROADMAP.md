@@ -30,6 +30,19 @@ entrega termina com `node verificar.mjs` VERDE + teste real no navegador.
       metas com data prevista, cenários de corte, alavancas por categoria e
       ano a ano do líquido real (capítulo 10).
 
+## Feito (v1.2.0, 27/07/2026, as 8 evoluções aprovadas na auditoria)
+
+- [x] **Backup Guardião**: cópia automática do JSON numa pasta local escolhida
+      uma vez, últimas 6 cópias (capítulo 11.1). Supera o antigo item
+      "backup automático por lembrete".
+- [x] **Importar Extrato** (CSV/OFX vira gastos com prévia, dedupe e categoria
+      sugerida; parser próprio em `extrato.js`) (capítulo 11.2).
+- [x] **13º e férias no Mapa** (`calcula13` idêntico à calculadora; férias pela
+      média real dos holerites) (capítulo 11.5).
+- [x] **Colchão** no Início, **Categoria que aprende**, **Avisos de
+      vencimento**, **Vigia de assinatura**, **Planilha detalhada**
+      (capítulos 11.3 a 11.8).
+
 ## Próximos (em ordem)
 
 1. **Pausar custo fixo pela interface**: o campo `ativo` existe e é respeitado,
@@ -39,10 +52,6 @@ entrega termina com `node verificar.mjs` VERDE + teste real no navegador.
 3. **Dissídio na base**: opção de informar a base real de folha (12.556,32 em
    folha até jun/2026) mantendo a faixa nominal para o prêmio; hoje o ajuste é
    manual no registro do salário. Ganha força com o importador de holerite.
-4. **13º e férias no app**: hoje só na calculadora (capítulo 01, seção 4);
-   avaliar painel anual com as duas parcelas do 13º.
-5. **Backup automático**: lembrete periódico de exportar (ex.: dica quando o
-   último export passou de 60 dias).
 
 ## Ideias avaliadas e adiadas (com o porquê)
 
