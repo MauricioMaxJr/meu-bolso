@@ -10,7 +10,7 @@ está ao lado do repo; este documento cobre o inventário completo.
 | Item | Calculadora | App | Status |
 |---|---|---|---|
 | `INSS_FAIXAS` (4 faixas 2026) | sim | sim | idêntico (verificar) |
-| `TETO_INSS` = 988,09 | sim | sim | idêntico (verificar) |
+| `TETO_INSS` = 988,07 (praticado na folha; oficial 988,09) | sim | sim | idêntico (verificar) |
 | `IRRF_FAIXAS` (5 faixas) | sim | sim | idêntico (verificar) |
 | `FAIXAS_META` (8 × 3 prêmios) | sim | sim | idêntico (verificar) |
 | `MESES_ESPECIAIS` = [6, 8, 11] | sim | sim | idêntico (verificar) |

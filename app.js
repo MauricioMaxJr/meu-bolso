@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================
-   Meu Bolso v8 — app pessoal de finanças
+   Meu Bolso - app pessoal de finanças
    Dados 100% locais (localStorage). Ícones: Phosphor duotone (MIT).
    Manual completo do produto: docs/ (fonte da verdade: este código).
    ============================================================ */
@@ -1277,12 +1277,6 @@ document.addEventListener("click", ev => {
   if (d.rmGasto) { mes.gastos = mes.gastos.filter(g => g.id !== d.rmGasto); salvar(); render(); }
   if (d.rmFixo) { if (confirm("Remover este custo fixo de todos os meses em aberto?")) { S.custosFixos = S.custosFixos.filter(f => f.id !== d.rmFixo); salvar(); render(); } }
   if (d.rmMeta) { if (confirm("Excluir esta meta?")) { S.metas = S.metas.filter(m => m.id !== d.rmMeta); salvar(); render(); } }
-  if (d.rmCat) {
-    const emUso = S.custosFixos.some(f => f.catId === d.rmCat) ||
-      Object.values(S.meses).some(m => m.gastos.some(g => g.catId === d.rmCat) || m.rendas.some(r => r.catId === d.rmCat));
-    if (emUso) { toast("Categoria em uso, não dá para excluir."); return; }
-    S.categorias = S.categorias.filter(c => c.id !== d.rmCat); salvar(); render();
-  }
   if (d.edConta) dlgConta(S.contas.find(c => c.id === d.edConta));
   if (d.edRenda) dlgRenda(mes.rendas.find(r => r.id === d.edRenda));
   if (d.edGasto) dlgGasto(mes.gastos.find(g => g.id === d.edGasto));
@@ -1475,7 +1469,8 @@ $("#file-import").addEventListener("change", async ev => {
   if (!file) return;
   try {
     const st = JSON.parse(await file.text());
-    if (!st || (st.version !== 1 && st.version !== 2) || !st.config || !st.categorias) throw new Error("formato inválido");
+    if (!st || (st.version !== 1 && st.version !== 2) || !st.config || !st.categorias ||
+        !Number.isFinite(st.config.salBase) || !Number.isFinite(st.config.descFolha)) throw new Error("formato inválido"); // sem config numérica o motor lança e o estado quebrado ficaria gravado
     if (confirm("Importar backup? Isso SUBSTITUI os dados atuais deste aparelho.")) {
       S = migrar(st); salvar(); aplicarTema(); render(); toast("Backup importado.");
     }
