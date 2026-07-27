@@ -12,13 +12,15 @@ Chave única do localStorage: `meubolso.v1`. Salvo integralmente a cada ação
 {
   version: 2,
   config: { salBase, descFolha, pctMinimo, pctPremioReserva, pctPremioLivre,
-            reservaMeses, tema, onboardingOculto? },
+            reservaMeses, tema, mapaPeriodo, avisos, ultimoAviso,
+            guardiaoUltimo, onboardingOculto? },
   categorias: [{ id, nome, icone, tipo, essencial, orcamento }],
   custosFixos: [{ id, nome, valor, catId, dia, assinatura, lembrete, variavel, ativo }],
   metas: [{ id, nome, icone, alvo, prazo, guardado, tipoReserva?, tipoInvest? }],
   contas: [{ id, nome, icone, saldo }],
   holerites: [{ id, tipo, mes, liquido, vencimentos, descontos, inss, irrf,
                 outros, fgts, premio, base, adtoFerias, itens[], em }],
+  aprendizado: { "descrição minúscula": catId },
   meses: { "AAAA-MM": { status, sal: { pctMeta, valorReal, registrado },
                         rendas[], gastos[], fixosStatus{}, aportes[],
                         snapshot: null | { tot, fixos, em, guardadoTotal, contasTotal } } }
@@ -26,8 +28,8 @@ Chave única do localStorage: `meubolso.v1`. Salvo integralmente a cada ação
 ```
 
 Rendas criadas por holerite carregam `holeriteId` (permite substituição limpa
-na reimportação e na exclusão). `migrar` garante `holerites: []` e
-`config.mapaPeriodo` em backups antigos.
+na reimportação e na exclusão). `migrar` garante `holerites: []`,
+`aprendizado: {}` e `config.mapaPeriodo` em backups antigos.
 
 Estado corrompido no load: console.warn e recomeço no default (sem crash).
 
@@ -79,3 +81,22 @@ cobre os dois temas + fallback por media query.
 - Nenhuma rede além do próprio host: sem analytics, sem CDN, dados só locais.
 - Todo texto do usuário passa por `esc()` antes de virar HTML (anti-XSS).
 - Backup é o único caminho de saída de dados, iniciado pelo usuário.
+
+## 7. Sobrevivência sem GitHub (plano de continuidade)
+
+O GitHub é só uma CÓPIA do código e uma hospedagem, nunca a fonte de nada:
+
+- **Seus dados** nunca passam pelo GitHub: vivem no localStorage do aparelho e
+  nos backups JSON (export manual + Guardião). O app instalado continua
+  abrindo e funcionando offline pelo cache do service worker mesmo com o site
+  fora do ar.
+- **O código completo**, com todo o histórico git, vive em
+  `E:\Projetos\salario-azzas\app` e em qualquer clone (ex.: o notebook). O
+  `meubolso-deploy.zip` na raiz do projeto é uma cópia pronta para hospedar.
+- **Para voltar ao ar**: (a) local, sem internet nenhuma: `node
+  servidor-local.mjs` na raiz do projeto e abrir http://localhost:8321;
+  (b) novo remoto: criar repositório em qualquer serviço e rodar
+  `git remote set-url origin <url nova>` + `git push --tags`; (c) nova
+  hospedagem: subir o conteúdo do zip em qualquer host de site estático.
+- **Recomendado ao dono**: manter uma cópia da pasta `E:\Projetos\salario-azzas`
+  no mesmo dispositivo de backup dos holerites.

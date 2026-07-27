@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Meu Bolso">
-<link rel="stylesheet" href="app.css?v=12">
+<link rel="stylesheet" href="app.css?v=13">
 </head>
 <body>
 
@@ -28,6 +28,7 @@
     <button data-tela="relatorios" data-ic="chart-column">Relatórios</button>
     <button data-tela="mapa" data-ic="compass">Mapa</button>
     <button data-tela="dicas" data-ic="lightbulb">Dicas</button>
+    <button data-tela="esquema" data-ic="coins">Esquema</button>
     <button data-tela="config" data-ic="settings">Configurações</button>
   </nav>
 </aside>
@@ -223,6 +224,26 @@
       </div>
     </section>
 
+    <!-- ================= ESQUEMA ================= -->
+    <section id="tela-esquema" class="tela" hidden>
+      <div class="panel">
+        <h2 data-ic="briefcase">Faixas por tempo de função</h2>
+        <div id="esquema-faixas"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="award">Prêmio por meta</h2>
+        <div id="esquema-premios"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="coins">Líquido estimado por faixa</h2>
+        <div id="esquema-liquido"></div>
+      </div>
+      <div class="panel">
+        <h2 data-ic="lightbulb">Regras do esquema</h2>
+        <div id="esquema-regras"></div>
+      </div>
+    </section>
+
     <!-- ================= CONFIG ================= -->
     <section id="tela-config" class="tela" hidden>
       <div class="panel">
@@ -294,9 +315,9 @@
 <div id="chart-tooltip" class="chart-tooltip" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
-<script src="icons.js?v=12"></script>
-<script src="holerite.js?v=12"></script>
-<script src="extrato.js?v=12"></script>
-<script src="app.js?v=12"></script>
+<script src="icons.js?v=13"></script>
+<script src="holerite.js?v=13"></script>
+<script src="extrato.js?v=13"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>

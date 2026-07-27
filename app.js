@@ -523,7 +523,8 @@ function abrirDialog(titulo, campos, aoSalvar, valores = {}, aoExcluir = null) {
 /* ================= NAVEGAÇÃO ================= */
 let telaAtiva = "inicio";
 const TITULOS = { inicio: "Início", renda: "Renda", custos: "Custos", metas: "Metas",
-                  contas: "Contas", relatorios: "Relatórios", mapa: "Mapa", dicas: "Dicas", config: "Configurações" };
+                  contas: "Contas", relatorios: "Relatórios", mapa: "Mapa", dicas: "Dicas",
+                  esquema: "Esquema", config: "Configurações" };
 
 function trocaTela(nome) {
   telaAtiva = nome;
@@ -545,7 +546,7 @@ function render() {
   stat.textContent = mes.status === "gravado" ? "Gravado" : "Em aberto";
   stat.className = "badge" + (mes.status === "gravado" ? " gravado" : "");
   renderInicio(); renderRenda(); renderCustos(); renderMetas(); renderContas();
-  renderRelatorios(); renderMapa(); renderDicas(); renderConfig(); renderHolerites();
+  renderRelatorios(); renderMapa(); renderDicas(); renderEsquema(); renderConfig(); renderHolerites();
 }
 
 /* ---------- Contas (onde o dinheiro está) ---------- */
@@ -848,6 +849,45 @@ function renderMetas() {
     }
     salvar(); render();
   };
+}
+
+/* ---------- Esquema (a régua salarial explicada, gerada do motor) ---------- */
+function renderEsquema() {
+  const box = $("#esquema-faixas");
+  if (!box) return;
+  const base = S.config.salBase;
+  const opcoes = [...document.querySelectorAll("#sal-base option")]; // fonte única: o select da Renda
+  box.innerHTML = `<div class="table-scroll"><table>
+    <thead><tr><th>Tempo de função</th><th>Base mensal</th></tr></thead>
+    <tbody>${opcoes.map(o => {
+      const [valor, tempo] = o.textContent.split(" - ");
+      const atual = Number(o.value) === base;
+      return `<tr${atual ? ' style="font-weight:700"' : ""}><td>${esc(tempo || "")}</td><td>${esc(valor)}${atual ? " (sua base)" : ""}</td></tr>`;
+    }).join("")}</tbody></table></div>`;
+
+  $("#esquema-premios").innerHTML = `<div class="table-scroll"><table>
+    <thead><tr><th>Meta batida</th><th>Mês normal</th><th>Jun, ago e nov</th><th>Dezembro</th></tr></thead>
+    <tbody>${FAIXAS_META.map(f => `<tr><td>${esc(f.label)}</td><td>${fmt(f.normal)}</td><td>${fmt(f.especial)}</td><td>${fmt(f.dezembro)}</td></tr>`).join("")}</tbody>
+  </table></div>
+  <p class="soft" style="margin:10px 0 0">Abaixo de 80% não há prêmio. O mesmo atingimento paga mais nos meses especiais e o máximo em dezembro.</p>`;
+
+  const linhas = [{ label: "Abaixo de 80%", pct: 0 }, ...FAIXAS_META.map(f => ({ label: f.label, pct: f.min }))];
+  $("#esquema-liquido").innerHTML = `<div class="table-scroll"><table>
+    <thead><tr><th>Meta</th><th>Mês normal</th><th>Jun, ago e nov</th><th>Dezembro</th></tr></thead>
+    <tbody>${linhas.map(l => `<tr><td>${esc(l.label)}</td>
+      <td>${fmt(calculaSalario(base, l.pct, 1, S.config.descFolha).liquido)}</td>
+      <td>${fmt(calculaSalario(base, l.pct, 6, S.config.descFolha).liquido)}</td>
+      <td>${fmt(calculaSalario(base, l.pct, 12, S.config.descFolha).liquido)}</td></tr>`).join("")}</tbody>
+  </table></div>
+  <p class="soft" style="margin:10px 0 0">Líquido estimado na sua base atual (${fmt(base)}), já descontando INSS, IRRF e ${fmt(S.config.descFolha)} fixos da folha. A base muda em Renda.</p>`;
+
+  $("#esquema-regras").innerHTML = `<ul class="lista">
+    <li><span class="ico-cat">${ico("calendar")}</span><span class="info"><span class="nome">Meses especiais</span><span class="det">Junho, agosto e novembro pagam prêmios maiores. Dezembro paga os máximos.</span></span></li>
+    <li><span class="ico-cat">${ico("calendar-check")}</span><span class="info"><span class="nome">13º salário</span><span class="det">Só sobre a base, prêmio não entra. Parcelas em novembro e dezembro (detalhe no Mapa).</span></span></li>
+    <li><span class="ico-cat">${ico("shield")}</span><span class="info"><span class="nome">INSS</span><span class="det">Trava no teto praticado na folha: ${fmt(TETO_INSS)} por mês.</span></span></li>
+    <li><span class="ico-cat">${ico("receipt")}</span><span class="info"><span class="nome">IRRF</span><span class="det">${(IRRF_FAIXAS.at(-1).aliq * 100).toLocaleString("pt-BR")}% da base de cálculo menos ${fmt(IRRF_FAIXAS.at(-1).deduz)} de dedução, na faixa deste esquema.</span></span></li>
+    <li><span class="ico-cat">${ico("piggy-bank")}</span><span class="info"><span class="nome">FGTS</span><span class="det">Depósito do empregador. Não é desconto e não sai do líquido.</span></span></li>
+  </ul>`;
 }
 
 /* ---------- Dicas / Config ---------- */

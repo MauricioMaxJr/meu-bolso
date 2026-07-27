@@ -43,6 +43,14 @@ entrega termina com `node verificar.mjs` VERDE + teste real no navegador.
       vencimento**, **Vigia de assinatura**, **Planilha detalhada**
       (capítulos 11.3 a 11.8).
 
+## Feito (v1.3.0, 27/07/2026)
+
+- [x] **Tela Esquema**: o conteúdo didático da calculadora dentro do app
+      (faixas por tempo de função, tabela completa de prêmios, líquido
+      estimado por faixa e regras), tudo gerado das constantes do motor
+      (capítulo 12).
+- [x] Plano de continuidade sem GitHub documentado (capítulo 08, seção 7).
+
 ## Próximos (em ordem)
 
 1. **Pausar custo fixo pela interface**: o campo `ativo` existe e é respeitado,
