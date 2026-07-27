@@ -50,6 +50,9 @@ entrega termina com `node verificar.mjs` VERDE + teste real no navegador.
       estimado por faixa e regras), tudo gerado das constantes do motor
       (capítulo 12).
 - [x] Plano de continuidade sem GitHub documentado (capítulo 08, seção 7).
+- [x] **Arquivo único** `meu-bolso.html` (gerador `app/gerar-html-unico.mjs`):
+      o app inteiro num arquivo para compartilhar sem site (capítulo 08,
+      seção 8); a auditoria acusa quando fica defasado.
 
 ## Próximos (em ordem)
 

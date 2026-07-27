@@ -100,3 +100,21 @@ O GitHub é só uma CÓPIA do código e uma hospedagem, nunca a fonte de nada:
   hospedagem: subir o conteúdo do zip em qualquer host de site estático.
 - **Recomendado ao dono**: manter uma cópia da pasta `E:\Projetos\salario-azzas`
   no mesmo dispositivo de backup dos holerites.
+
+## 8. Versão em arquivo único (meu-bolso.html)
+
+`node app/gerar-html-unico.mjs` empacota o app INTEIRO num só arquivo na raiz
+do projeto: CSS, os 4 scripts e a fonte Inter (data URI) embutidos, sem
+manifest e sem service worker. Serve para mandar o app a alguém por WhatsApp,
+e-mail ou pendrive: a pessoa abre com dois cliques, sem site e sem internet.
+
+Regras e limites:
+
+- O gerador carimba uma `marca` (hash dos assets); a auditoria acusa VERMELHO
+  se o arquivo ficar defasado do app. Regerar a cada release.
+- Sem service worker (não existe em `file://`): o arquivo já é offline por
+  natureza. Sem instalação como PWA; é um arquivo, não um site.
+- Guardião e Avisos dependem de APIs que alguns navegadores negam em
+  `file://`; se negarem, os botões avisam por toast e nada quebra.
+- Os dados de quem abre ficam no aparelho da pessoa, em origem própria,
+  separados do site publicado; backup JSON é compatível entre os dois.

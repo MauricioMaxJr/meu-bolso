@@ -30,6 +30,7 @@
    pesquisa de mercado, teste visual humano.
    ============================================================ */
 import { readFileSync, existsSync, readdirSync, statSync, mkdtempSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { dirname, join, normalize, sep } from "node:path";
 import { tmpdir } from "node:os";
@@ -461,6 +462,18 @@ console.log("\n== 10. INFRA ==");
                         : ok("conteúdo do zip idêntico ao repo (normalizado por quebra de linha)");
       rmSync(dir, { recursive: true, force: true });
     }
+  }
+
+  const HTMLU = join(PROJ, "meu-bolso.html");
+  if (!existsSync(HTMLU)) info("meu-bolso.html (arquivo único) ausente; gere com: node app/gerar-html-unico.mjs");
+  else {
+    const h = createHash("sha256");
+    for (const f of ["index.html", "app.css", "app.js", "icons.js", "holerite.js", "extrato.js"]) h.update(readFileSync(join(RAIZ, f)));
+    h.update(readFileSync(join(RAIZ, "fonts/InterVariable.woff2")));
+    const m = readFileSync(HTMLU, "utf8").match(/marca:([0-9a-f]{16})/);
+    (m && m[1] === h.digest("hex").slice(0, 16))
+      ? ok("meu-bolso.html (arquivo único) gerado dos assets atuais")
+      : erro("meu-bolso.html DESATUALIZADO - regerar: node app/gerar-html-unico.mjs");
   }
 
   const hooks = spawnSync("git", ["-C", RAIZ, "config", "core.hooksPath"], { encoding: "utf8" }).stdout.trim();
