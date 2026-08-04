@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculador de Salário — Fixo + Variável</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f5;
+    --text: #1a1f2b;
+    --text-soft: #5b6472;
+    --border: #dde2e9;
+    --accent: #0f5132;
+    --accent-soft: #d1e7dd;
+    --accent-strong: #198754;
+    --warn-bg: #fff3cd;
+    --warn-text: #664d03;
+    --info-bg: #cfe2ff;
+    --info-text: #084298;
+    --danger: #b02a37;
+    --highlight: #fff8e1;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c;
+      --surface: #1c212b;
+      --surface-2: #242b38;
+      --text: #e8ebf0;
+      --text-soft: #9aa4b2;
+      --border: #323a48;
+      --accent: #7ee2b8;
+      --accent-soft: #14352a;
+      --accent-strong: #34c98e;
+      --warn-bg: #3a3423;
+      --warn-text: #ffe08a;
+      --info-bg: #1d2f4a;
+      --info-text: #9ec5fe;
+      --danger: #f17381;
+      --highlight: #34301c;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    padding: 24px 16px 64px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header.page { margin-bottom: 28px; }
+  header.page h1 { font-size: 1.7rem; letter-spacing: -.02em; }
+  header.page p { color: var(--text-soft); max-width: 65ch; }
+
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  section > h2 {
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  section > h2 .step {
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 999px; font-size: .8rem; font-weight: 700;
+    width: 26px; height: 26px; display: inline-flex;
+    align-items: center; justify-content: center; flex: none;
+  }
+  section > p.lead { color: var(--text-soft); margin-bottom: 16px; max-width: 75ch; }
+  h3 { font-size: .95rem; margin: 18px 0 8px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  .table-scroll { overflow-x: auto; }
+  th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { background: var(--surface-2); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text-soft); }
+  tbody tr:last-child td { border-bottom: none; }
+  tr.active-row td { background: var(--highlight); font-weight: 600; }
+  tfoot td { font-weight: 700; border-top: 2px solid var(--border); }
+  td .mini { display: block; font-size: .72rem; font-weight: 400; color: var(--text-soft); }
+
+  .callout { border-radius: 10px; padding: 12px 16px; font-size: .9rem; margin: 14px 0 0; }
+  .callout.info { background: var(--info-bg); color: var(--info-text); }
+  .callout.warn { background: var(--warn-bg); color: var(--warn-text); }
+  .callout strong { font-weight: 700; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+  .card { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; }
+  .card .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-soft); }
+  .card .value { font-size: 1.25rem; font-weight: 700; margin-top: 2px; }
+  .card .sub { font-size: .8rem; color: var(--text-soft); }
+
+  /* ---- formulário ---- */
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-top: 16px; }
+  .field label { display: block; font-size: .8rem; font-weight: 600; color: var(--text-soft); margin-bottom: 5px; }
+  .field select, .field input[type="number"] {
+    width: 100%; padding: 9px 12px; font-size: 1rem;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text);
+  }
+  .field input[type="range"] { width: 100%; margin-top: 8px; accent-color: var(--accent-strong); }
+  .field .hint { font-size: .75rem; color: var(--text-soft); margin-top: 4px; }
+  .tipo-mes-badge {
+    display: inline-block; margin-top: 6px; padding: 2px 10px;
+    border-radius: 999px; font-size: .75rem; font-weight: 700;
+    background: var(--accent-soft); color: var(--accent);
+  }
+
+  /* ---- resultado ---- */
+  .resultado { margin-top: 22px; border-top: 1px dashed var(--border); padding-top: 18px; }
+  .resultado-hero {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px; margin-bottom: 16px;
+  }
+  .hero-box { border-radius: 10px; padding: 14px 18px; background: var(--surface-2); }
+  .hero-box.liq { background: var(--accent-soft); }
+  .hero-box .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-soft); }
+  .hero-box.liq .label { color: var(--accent); }
+  .hero-box .value { font-size: 1.75rem; font-weight: 800; letter-spacing: -.02em; }
+  .hero-box.liq .value { color: var(--accent-strong); }
+  .hero-box .sub { font-size: .8rem; color: var(--text-soft); }
+
+  .comp-bar { display: flex; height: 26px; border-radius: 8px; overflow: hidden; margin: 8px 0 6px; }
+  .comp-bar div { min-width: 0; }
+  .comp-bar .seg-liq { background: var(--accent-strong); }
+  .comp-bar .seg-inss { background: #e8a33d; }
+  .comp-bar .seg-irrf { background: #d1606e; }
+  .comp-bar .seg-outros { background: #8b93a5; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .8rem; color: var(--text-soft); margin-bottom: 14px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+  .legend .l-liq::before { background: var(--accent-strong); }
+  .legend .l-inss::before { background: #e8a33d; }
+  .legend .l-irrf::before { background: #d1606e; }
+  .legend .l-outros::before { background: #8b93a5; }
+
+  footer.page { color: var(--text-soft); font-size: .8rem; max-width: 75ch; }
+  footer.page p { margin-bottom: 6px; }
+  @media (max-width: 560px) {
+    section { padding: 16px; }
+    .hero-box .value { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>Calculador de Salário</h1>
+  <p>Escolha sua base salarial, o % de entrega do mês e o mês do ano: o resultado sai na hora,
+     bruto e líquido. Abaixo ficam as tabelas de consulta — faixas salariais por tempo de função,
+     bônus por atingimento e a explicação de como os descontos funcionam.</p>
+</header>
+
+<!-- ============ 1. CALCULADOR ============ -->
+<section>
+  <h2><span class="step">1</span> Calcule seu salário do mês</h2>
+  <div class="controls">
+    <div class="field">
+      <label for="inp-base">Base salarial (tempo na função)</label>
+      <select id="inp-base">
+        <option value="10000">R$ 10.000 — até 2 anos</option>
+        <option value="12000">R$ 12.000 — 2 a 4 anos</option>
+        <option value="14000" selected>R$ 14.000 — 4 a 6 anos</option>
+        <option value="16000">R$ 16.000 — 6 anos ou +</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="inp-meta">% de entrega no mês: <span id="meta-view">100%</span></label>
+      <input type="number" id="inp-meta" min="0" max="200" step="1" value="100">
+      <input type="range" id="inp-meta-range" min="60" max="140" step="1" value="100">
+    </div>
+    <div class="field">
+      <label for="inp-mes">Mês</label>
+      <select id="inp-mes"></select>
+      <span class="tipo-mes-badge" id="badge-tipo"></span>
+    </div>
+    <div class="field">
+      <label for="inp-outros">Outros descontos fixos (R$)</label>
+      <input type="number" id="inp-outros" min="0" step="0.01" value="160">
+      <div class="hint">Odonto + vale-transporte + contribuição assistencial (em 2025 variou de ~R$ 110 a ~R$ 350).</div>
+    </div>
+  </div>
+
+  <div class="resultado">
+    <div class="resultado-hero">
+      <div class="hero-box">
+        <div class="label">Salário bruto</div>
+        <div class="value" id="out-bruto">—</div>
+        <div class="sub" id="out-bruto-sub">—</div>
+      </div>
+      <div class="hero-box liq">
+        <div class="label">Salário líquido (na conta)</div>
+        <div class="value" id="out-liquido">—</div>
+        <div class="sub" id="out-pct">—</div>
+      </div>
+    </div>
+    <div class="comp-bar" id="comp-bar" title="Composição do bruto"></div>
+    <div class="legend">
+      <span class="l-liq">Líquido</span>
+      <span class="l-inss">INSS</span>
+      <span class="l-irrf">IRRF</span>
+      <span class="l-outros">Outros descontos</span>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <tbody>
+        <tr><td>Base salarial</td><td id="out-fixo"></td></tr>
+        <tr><td>Prêmio por atingimento — <span id="out-faixa"></span></td><td id="out-premio"></td></tr>
+        <tr><td><strong>Bruto (base + prêmio)</strong></td><td id="out-bruto2" style="font-weight:700"></td></tr>
+        <tr><td>INSS (teto)</td><td id="out-inss" style="color:var(--danger)"></td></tr>
+        <tr><td>IRRF (sobre o bruto − INSS)</td><td id="out-irrf" style="color:var(--danger)"></td></tr>
+        <tr><td>Outros descontos</td><td id="out-outros" style="color:var(--danger)"></td></tr>
+        <tr><td><strong>Total de descontos</strong></td><td id="out-desc" style="color:var(--danger);font-weight:700"></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. EVOLUÇÃO ============ -->
+<section>
+  <h2><span class="step">2</span> Onde seu salário pode chegar</h2>
+  <p class="lead">Com o mesmo <strong><span id="evo-meta">100%</span> de entrega</strong>, veja o
+     líquido estimado em cada faixa de tempo de função e em cada tipo de mês — para enxergar a
+     evolução com os anos de casa e o peso dos meses especiais. Sua faixa atual está destacada.</p>
+  <div class="table-scroll">
+  <table id="tabela-evolucao">
+    <thead>
+      <tr><th>Tempo na função</th><th>Base</th><th>Mês normal</th><th>Jun · Ago · Nov</th><th>Dezembro</th></tr>
+    </thead>
+    <tbody><!-- preenchido via JS --></tbody>
+  </table>
+  </div>
+  <div class="callout info">Valores líquidos, já com INSS, IRRF e os descontos fixos informados acima.
+     O valor menor em cinza é o bruto correspondente.</div>
+</section>
+
+<!-- ============ 3. TABELAS DE CONSULTA ============ -->
+<section>
+  <h2><span class="step">3</span> Tabelas de consulta</h2>
+
+  <h3>Faixas salariais — por tempo na função</h3>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Tempo na função</th><th>Salário base</th></tr></thead>
+    <tbody>
+      <tr><td>Até 2 anos</td><td>R$ 10.000</td></tr>
+      <tr><td>2 a 4 anos</td><td>R$ 12.000</td></tr>
+      <tr><td>4 a 6 anos</td><td>R$ 14.000</td></tr>
+      <tr><td>6 anos ou mais</td><td>R$ 16.000</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout info">Na prática, o valor em folha pode ser um pouco maior por causa dos
+     reajustes de dissídio — em 2025 a faixa de R$ 12.000 estava sendo paga como R$ 12.208,00 e
+     passou a R$ 12.556,32 a partir de outubro.</div>
+
+  <h3>Bônus por atingimento de meta (prêmio)</h3>
+  <p class="lead">O prêmio entra como <strong>premiação por cima da base</strong>, conforme o % de
+     entrega do mês. Há três calendários: meses normais, meses especiais
+     (<strong>junho, agosto e novembro</strong>) e <strong>dezembro</strong>, o mais forte do ano.
+     Abaixo de 80% não há prêmio. A linha destacada acompanha o % selecionado no calculador.</p>
+  <div class="table-scroll">
+  <table id="tabela-faixas">
+    <thead>
+      <tr>
+        <th>Meta atingida</th>
+        <th>Mês normal</th>
+        <th>Jun · Ago · Nov</th>
+        <th>Dezembro</th>
+      </tr>
+    </thead>
+    <tbody><!-- preenchido via JS --></tbody>
+  </table>
+  </div>
+  <div class="callout warn"><strong>Dezembro é o mês que mais pesa:</strong> mesmo na faixa de
+     80–84% o prêmio é de R$ 15.000, e a 120%+ chega a R$ 50.000. Vale planejar o ano para chegar
+     forte no último trimestre.</div>
+</section>
+
+<!-- ============ 4. COMO FUNCIONAM OS DESCONTOS ============ -->
+<section>
+  <h2><span class="step">4</span> Como funcionam os descontos</h2>
+  <p class="lead"><strong>Importante:</strong> conferido nos demonstrativos reais de 2025, os
+     descontos incidem sobre o <strong>bruto total (base + prêmio)</strong>, e não só sobre a base.
+     A "Base de Cálculo IRRF" da folha é sempre salário + prêmio — por isso o IRRF varia tanto de um
+     mês para o outro. O que dá a impressão de desconto fixo é o INSS, que trava no teto legal.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Item</th><th>Como é calculado</th></tr></thead>
+    <tbody>
+      <tr><td><strong>INSS</strong></td><td style="white-space:normal;text-align:left">Tabela progressiva sobre o bruto; como o bruto sempre supera o teto de contribuição, o valor trava no teto (R$ 988,07 em 2026; era R$ 951,62 em 2025) — igual todo mês.</td></tr>
+      <tr><td><strong>IRRF</strong></td><td style="white-space:normal;text-align:left">27,5% sobre (bruto − INSS), menos a parcela a deduzir (R$ 908,73). É o maior desconto e cresce junto com o prêmio.</td></tr>
+      <tr><td>Plano odontológico</td><td style="white-space:normal;text-align:left">Valor fixo mensal (~R$ 10,93).</td></tr>
+      <tr><td>Vale-transporte (reembolso)</td><td style="white-space:normal;text-align:left">Variável conforme uso (R$ 99 a R$ 297 nos demonstrativos de 2025).</td></tr>
+      <tr><td>Contribuição assistencial</td><td style="white-space:normal;text-align:left">R$ 50/mês (apareceu de setembro a dezembro de 2025).</td></tr>
+      <tr><td>FGTS <em>(não é desconto)</em></td><td style="white-space:normal;text-align:left">8% <strong>somente sobre a base salarial</strong> (o prêmio não gera FGTS). Aparece no demonstrativo, mas é depósito do empregador na sua conta do FGTS — não sai do líquido.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout info"><strong>Regra rápida de previsibilidade:</strong> nos meses normais de
+     folha de 2025, os descontos ficaram entre 26,7% e 28,0% do bruto — média de
+     <strong>≈ 27,4%</strong>. Ou seja: <strong>líquido ≈ 72,6% do bruto</strong>.</div>
+
+  <h3>13º salário e férias</h3>
+  <p class="lead" style="margin-bottom:8px">Aparecem em demonstrativos próprios e seguem só a base (o prêmio não entra no cálculo):</p>
+  <ul style="padding-left: 22px; font-size: .92rem; color: var(--text-soft)">
+    <li><strong>13º</strong> — 1ª parcela em novembro (metade da base, <em>sem descontos</em>) e
+        2ª parcela em dezembro (base cheia, menos INSS e IRRF exclusivos do 13º, menos a 1ª parcela).</li>
+    <li><strong>Férias</strong> — pagas adiantado (salário do período + 1/3 constitucional; + abono se vender
+        10 dias). Na folha do mês seguinte o adiantamento é descontado, por isso aquele mês parece "baixo" no
+        demonstrativo — o dinheiro já tinha entrado antes.</li>
+  </ul>
+</section>
+
+<!-- ============ 5. PROJEÇÃO ANUAL ============ -->
+<section>
+  <h2><span class="step">5</span> Projeção anual</h2>
+  <p class="lead">Mantendo a mesma base, o mesmo % de entrega em todos os meses e os mesmos
+     descontos fixos, o ano fica assim (inclui as duas parcelas do 13º; férias não entram porque só
+     mudam <em>quando</em> o dinheiro entra, não o total do ano — exceto pelo 1/3 e abono, que são um extra):</p>
+  <div class="table-scroll">
+  <table id="tabela-projecao">
+    <thead>
+      <tr><th>Mês</th><th>Tipo</th><th>Prêmio</th><th>Bruto</th><th>Descontos</th><th>Líquido</th></tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot></tfoot>
+  </table>
+  </div>
+  <div class="cards" id="cards-anuais"></div>
+  <div class="callout info" id="callout-ferias"></div>
+</section>
+
+<footer class="page">
+  <p><strong>Notas:</strong> INSS com as faixas de 2026 (Portaria MPS/MF nº 13/2026) e teto de
+     R$ 988,07, que é o valor PRATICADO na folha (a soma oficial dá R$ 988,09; a ADP trunca cada
+     parcela — conferido nos demonstrativos de jan a jun/2026). IRRF com a tabela mensal vigente
+     desde mai/2025, mantida em 2026 pela Lei 15.191/2025 (sem dependentes). O redutor da Lei
+     15.270/2025 (isenção até R$ 5.000) não se aplica: a renda tributável deste esquema nunca fica
+     abaixo de R$ 7.350. A lógica foi validada centavo a centavo contra os demonstrativos reais de
+     2022 a 2026. Quando as tabelas mudarem de novo, basta editar as constantes
+     <code>INSS_FAIXAS</code>, <code>TETO_INSS</code> e <code>IRRF_FAIXAS</code>
+     no início do script desta página.</p>
+  <p>Valores estimados, sem caráter oficial. O demonstrativo da empresa prevalece.</p>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* ================= TABELAS EDITÁVEIS (vigência 2026) ================= */
+const INSS_FAIXAS = [          // tabela progressiva do INSS (Portaria MPS/MF nº 13/2026)
+  { ate: 1621.00, aliq: 0.075 },
+  { ate: 2902.84, aliq: 0.09  },
+  { ate: 4354.27, aliq: 0.12  },
+  { ate: 8475.55, aliq: 0.14  },
+];
+const TETO_INSS = 988.07;      // teto praticado na folha 2026 (oficial: 988,09; a ADP trunca cada parcela)
+
+const IRRF_FAIXAS = [          // tabela mensal desde mai/2025, mantida em 2026 (Lei 15.191/2025)
+  { ate: 2428.80, aliq: 0,     deduz: 0      },
+  { ate: 2826.65, aliq: 0.075, deduz: 182.16 },
+  { ate: 3751.05, aliq: 0.15,  deduz: 394.16 },
+  { ate: 4664.68, aliq: 0.225, deduz: 675.49 },
+  { ate: Infinity, aliq: 0.275, deduz: 908.73 },
+];
+
+/* prêmio por faixa de meta: mês normal | jun/ago/nov | dezembro */
+const FAIXAS_META = [
+  { min: 80,  label: "80 a 84%",   normal: 0,     especial: 0,     dezembro: 15000 },
+  { min: 85,  label: "85 a 89%",   normal: 1500,  especial: 1500,  dezembro: 20000 },
+  { min: 90,  label: "90 a 94%",   normal: 6000,  especial: 8000,  dezembro: 25000 },
+  { min: 95,  label: "95 a 99%",   normal: 7500,  especial: 10000, dezembro: 30000 },
+  { min: 100, label: "100 a 104%", normal: 10000, especial: 12000, dezembro: 35000 },
+  { min: 105, label: "105 a 109%", normal: 12000, especial: 14000, dezembro: 40000 },
+  { min: 110, label: "110 a 119%", normal: 14000, especial: 17000, dezembro: 45000 },
+  { min: 120, label: "120% ou +",  normal: 15000, especial: 20000, dezembro: 50000 },
+];
+
+const BASES = [
+  { fixo: 10000, label: "Até 2 anos" },
+  { fixo: 12000, label: "2 a 4 anos" },
+  { fixo: 14000, label: "4 a 6 anos" },
+  { fixo: 16000, label: "6 anos ou +" },
+];
+
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho",
+               "Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const MESES_ESPECIAIS = [6, 8, 11];  // junho, agosto, novembro
+
+/* ================= CÁLCULOS ================= */
+const round2 = v => Math.round(v * 100) / 100;
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+function calcINSS(bruto) {
+  let inss = 0, piso = 0;
+  for (const f of INSS_FAIXAS) {
+    const parcela = Math.min(bruto, f.ate) - piso;
+    if (parcela <= 0) break;
+    inss += parcela * f.aliq;
+    piso = f.ate;
+  }
+  return Math.min(round2(inss), TETO_INSS);
+}
+
+function calcIRRF(base) {
+  const f = IRRF_FAIXAS.find(f => base <= f.ate);
+  return Math.max(0, round2(base * f.aliq - f.deduz));
+}
+
+function tipoDoMes(mes) {           // mes: 1-12
+  if (mes === 12) return "dezembro";
+  if (MESES_ESPECIAIS.includes(mes)) return "especial";
+  return "normal";
+}
+
+function faixaDaMeta(pct) {
+  let atual = null;
+  for (const f of FAIXAS_META) if (pct >= f.min) atual = f;
+  return atual;                     // null se < 80%
+}
+
+function calculaTipo(fixo, pctMeta, tipo, outros) {
+  const faixa = faixaDaMeta(pctMeta);
+  const premio = faixa ? faixa[tipo] : 0;
+  const bruto = fixo + premio;
+  const inss = calcINSS(bruto);
+  const irrf = calcIRRF(bruto - inss);
+  const desc = round2(inss + irrf + outros);
+  return { faixa, premio, bruto, inss, irrf, outros, desc, liquido: round2(bruto - desc) };
+}
+
+function calculaMes(fixo, pctMeta, mes, outros) {
+  const tipo = tipoDoMes(mes);
+  return Object.assign({ tipo }, calculaTipo(fixo, pctMeta, tipo, outros));
+}
+
+function calcula13(fixo) {          // prêmio não integra o 13º
+  const inss = calcINSS(fixo);
+  const irrf = calcIRRF(fixo - inss);
+  const parcela1 = round2(fixo / 2);              // novembro, sem descontos
+  const parcela2 = round2(fixo - inss - irrf - parcela1); // dezembro
+  return { parcela1, parcela2, inss, irrf, liquidoTotal: round2(parcela1 + parcela2) };
+}
+
+/* ================= UI ================= */
+const $ = id => document.getElementById(id);
+const inpBase = $("inp-base"), inpMes = $("inp-mes"), inpMeta = $("inp-meta"),
+      inpMetaRange = $("inp-meta-range"), inpOutros = $("inp-outros");
+
+/* tabela de faixas de prêmio */
+(function montaTabelaFaixas() {
+  const tb = document.querySelector("#tabela-faixas tbody");
+  tb.innerHTML = FAIXAS_META.map(f =>
+    `<tr data-min="${f.min}"><td>${f.label}</td><td>${brl.format(f.normal)}</td>` +
+    `<td>${brl.format(f.especial)}</td><td>${brl.format(f.dezembro)}</td></tr>`).join("");
+})();
+
+/* select de meses */
+inpMes.innerHTML = MESES.map((m, i) => {
+  const t = tipoDoMes(i + 1);
+  const tag = t === "dezembro" ? " ★★" : t === "especial" ? " ★" : "";
+  return `<option value="${i + 1}">${m}${tag}</option>`;
+}).join("");
+inpMes.value = String(new Date().getMonth() + 1);
+
+function atualiza() {
+  const fixo = Number(inpBase.value);
+  const mes = Number(inpMes.value);
+  const pct = Number(inpMeta.value) || 0;
+  const outros = Number(inpOutros.value) || 0;
+
+  $("meta-view").textContent = pct + "%";
+  $("evo-meta").textContent = pct + "%";
+  if (pct >= Number(inpMetaRange.min) && pct <= Number(inpMetaRange.max)) inpMetaRange.value = pct;
+
+  const r = calculaMes(fixo, pct, mes, outros);
+
+  const nomeTipo = { normal: "Mês normal", especial: "Mês especial (jun/ago/nov)", dezembro: "Dezembro — prêmios máximos" };
+  $("badge-tipo").textContent = nomeTipo[r.tipo];
+
+  $("out-bruto").textContent = brl.format(r.bruto);
+  $("out-bruto-sub").textContent = `base ${brl.format(fixo)} + prêmio ${brl.format(r.premio)}`;
+  $("out-liquido").textContent = brl.format(r.liquido);
+  $("out-pct").textContent = `descontos: ${brl.format(r.desc)} (${(r.desc / r.bruto * 100).toFixed(1)}% do bruto)`;
+
+  $("out-fixo").textContent = brl.format(fixo);
+  $("out-faixa").textContent = r.faixa ? "faixa " + r.faixa.label : "abaixo de 80%, sem prêmio";
+  $("out-premio").textContent = brl.format(r.premio);
+  $("out-bruto2").textContent = brl.format(r.bruto);
+  $("out-inss").textContent = "− " + brl.format(r.inss);
+  $("out-irrf").textContent = "− " + brl.format(r.irrf);
+  $("out-outros").textContent = "− " + brl.format(r.outros);
+  $("out-desc").textContent = "− " + brl.format(r.desc);
+
+  const bar = $("comp-bar");
+  bar.innerHTML = "";
+  [["seg-liq", r.liquido], ["seg-inss", r.inss], ["seg-irrf", r.irrf], ["seg-outros", r.outros]]
+    .forEach(([cls, v]) => {
+      const d = document.createElement("div");
+      d.className = cls;
+      d.style.width = (v / r.bruto * 100) + "%";
+      d.title = brl.format(v);
+      bar.appendChild(d);
+    });
+
+  /* destaca a faixa ativa na tabela de prêmios */
+  document.querySelectorAll("#tabela-faixas tbody tr").forEach(tr => {
+    tr.classList.toggle("active-row", r.faixa ? Number(tr.dataset.min) === r.faixa.min : false);
+  });
+
+  atualizaEvolucao(fixo, pct, outros);
+  atualizaProjecao(fixo, pct, outros);
+}
+
+function atualizaEvolucao(fixoAtual, pct, outros) {
+  const tb = document.querySelector("#tabela-evolucao tbody");
+  tb.innerHTML = BASES.map(b => {
+    const cel = ["normal", "especial", "dezembro"].map(tipo => {
+      const r = calculaTipo(b.fixo, pct, tipo, outros);
+      return `<td><strong>${brl.format(r.liquido)}</strong><span class="mini">bruto ${brl.format(r.bruto)}</span></td>`;
+    }).join("");
+    return `<tr${b.fixo === fixoAtual ? ' class="active-row"' : ""}>` +
+           `<td>${b.label}</td><td>${brl.format(b.fixo)}</td>${cel}</tr>`;
+  }).join("");
+}
+
+function atualizaProjecao(fixo, pct, outros) {
+  const tb = document.querySelector("#tabela-projecao tbody");
+  const tf = document.querySelector("#tabela-projecao tfoot");
+  let totBruto = 0, totDesc = 0, totLiq = 0;
+  const nomeTipoCurto = { normal: "normal", especial: "especial ★", dezembro: "dezembro ★★" };
+
+  tb.innerHTML = MESES.map((nome, i) => {
+    const r = calculaMes(fixo, pct, i + 1, outros);
+    totBruto += r.bruto; totDesc += r.desc; totLiq += r.liquido;
+    return `<tr${r.tipo !== "normal" ? ' class="active-row"' : ""}><td>${nome}</td><td>${nomeTipoCurto[r.tipo]}</td>` +
+           `<td>${brl.format(r.premio)}</td><td>${brl.format(r.bruto)}</td>` +
+           `<td>− ${brl.format(r.desc)}</td><td>${brl.format(r.liquido)}</td></tr>`;
+  }).join("");
+
+  const d13 = calcula13(fixo);
+  tb.innerHTML +=
+    `<tr><td>13º — 1ª parcela (nov)</td><td>—</td><td>—</td><td>${brl.format(d13.parcela1)}</td><td>− ${brl.format(0)}</td><td>${brl.format(d13.parcela1)}</td></tr>` +
+    `<tr><td>13º — 2ª parcela (dez)</td><td>—</td><td>—</td><td>${brl.format(fixo - d13.parcela1)}</td><td>− ${brl.format(round2(d13.inss + d13.irrf))}</td><td>${brl.format(d13.parcela2)}</td></tr>`;
+
+  const brutoAno = totBruto + fixo;              // 12 folhas + 13º integral
+  const descAno = totDesc + d13.inss + d13.irrf;
+  const liqAno = totLiq + d13.liquidoTotal;
+  tf.innerHTML = `<tr><td colspan="3">Total do ano (12 folhas + 13º)</td>` +
+                 `<td>${brl.format(brutoAno)}</td><td>− ${brl.format(descAno)}</td><td>${brl.format(liqAno)}</td></tr>`;
+
+  $("cards-anuais").innerHTML = `
+    <div class="card"><div class="label">Bruto anual</div><div class="value">${brl.format(brutoAno)}</div></div>
+    <div class="card"><div class="label">Descontos no ano</div><div class="value">− ${brl.format(descAno)}</div>
+      <div class="sub">${(descAno / brutoAno * 100).toFixed(1)}% do bruto</div></div>
+    <div class="card"><div class="label">Líquido anual estimado</div><div class="value">${brl.format(liqAno)}</div>
+      <div class="sub">média de ${brl.format(round2(liqAno / 13))} por pagamento</div></div>`;
+
+  const terco = round2(fixo / 3);
+  $("callout-ferias").innerHTML = `<strong>Férias:</strong> ao tirar férias, entra ainda o 1/3 ` +
+    `constitucional (≈ ${brl.format(terco)} brutos sobre 30 dias) e, se vender 10 dias, o abono ` +
+    `pecuniário (+ ⅓ do abono) — um extra de caixa no ano, tributado na fonte.`;
+}
+
+[inpBase, inpMes, inpMeta, inpOutros].forEach(el => el.addEventListener("input", atualiza));
+inpMetaRange.addEventListener("input", () => { inpMeta.value = inpMetaRange.value; atualiza(); });
+atualiza();
+</script>
+</body>
+</html>

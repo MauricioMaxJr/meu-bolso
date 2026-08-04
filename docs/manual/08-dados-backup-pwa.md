@@ -99,14 +99,14 @@ O GitHub é só uma CÓPIA do código e uma hospedagem, nunca a fonte de nada:
   abrindo e funcionando offline pelo cache do service worker mesmo com o site
   fora do ar.
 - **O código completo**, com todo o histórico git, vive em
-  `E:\Projetos\salario-azzas\app` e em qualquer clone (ex.: o notebook). O
+  `E:\Projetos\maxbolso\app` e em qualquer clone (ex.: o notebook). O
   `maxbolso-deploy.zip` na raiz do projeto é uma cópia pronta para hospedar.
 - **Para voltar ao ar**: (a) local, sem internet nenhuma: `node
-  servidor-local.mjs` na raiz do projeto e abrir http://localhost:8321;
+  app/servidor-local.mjs` na raiz do projeto e abrir http://localhost:8321;
   (b) novo remoto: criar repositório em qualquer serviço e rodar
   `git remote set-url origin <url nova>` + `git push --tags`; (c) nova
   hospedagem: subir o conteúdo do zip em qualquer host de site estático.
-- **Recomendado ao dono**: manter uma cópia da pasta `E:\Projetos\salario-azzas`
+- **Recomendado ao dono**: manter uma cópia da pasta `E:\Projetos\maxbolso`
   no mesmo dispositivo de backup dos holerites.
 
 ## 8. Versão em arquivo único (maxbolso.html)

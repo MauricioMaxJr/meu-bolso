@@ -115,8 +115,8 @@ if (SELAR) {
 
 /* ---------- 3. paridade com a calculadora original ---------- */
 console.log("\n== 3. PARIDADE COM A CALCULADORA ==");
-const CALC = join(RAIZ, "..", "calculadora-salario.html");
-if (!existsSync(CALC)) console.log("  INFO calculadora-salario.html não está ao lado do repo; paridade pulada");
+const CALC = join(RAIZ, "calculadora-salario.html");
+if (!existsSync(CALC)) console.log("  INFO calculadora-salario.html não está no repo; paridade pulada");
 else {
   const calc = readFileSync(CALC, "utf8");
   const bloco = (src, nome) => {

@@ -1,9 +1,9 @@
 # PARIDADE: calculadora-salario.html × app (MAXBOLSO)
 
 Contrato de fidelidade entre a calculadora original (fonte:
-`E:\Projetos\salario-azzas\calculadora-salario.html`, fora do repo) e o app.
-O `verificar.mjs` confere as CONSTANTES automaticamente quando a calculadora
-está ao lado do repo; este documento cobre o inventário completo.
+`calculadora-salario.html`, na raiz do repo) e o app.
+O `verificar.mjs` confere as CONSTANTES automaticamente; este documento
+cobre o inventário completo.
 
 ## Motor (tem de ser idêntico, conferido automaticamente)
 

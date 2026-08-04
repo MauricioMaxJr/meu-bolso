@@ -21,5 +21,5 @@ constantes e funções do motor, então a paridade é garantida por construção
   painel do Mapa); teto INSS praticado (`TETO_INSS`); IRRF da última faixa
   (alíquota e dedução lidas de `IRRF_FAIXAS`); FGTS não é desconto.
 
-A `calculadora-salario.html` continua existindo fora do repo como simulador
+A `calculadora-salario.html` continua existindo na raiz do repo como simulador
 independente; a tela Esquema é a versão viva dentro do produto.

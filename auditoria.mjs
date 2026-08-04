@@ -134,8 +134,8 @@ console.log("\n== 1. MOTOR PROFUNDO ==");
 
 /* ---------- 2. paridade funcional com a calculadora ---------- */
 console.log("\n== 2. PARIDADE FUNCIONAL (app × calculadora) ==");
-const CALC = join(PROJ, "calculadora-salario.html");
-if (!existsSync(CALC)) info("calculadora-salario.html ausente nesta máquina; paridade funcional pulada");
+const CALC = join(RAIZ, "calculadora-salario.html");
+if (!existsSync(CALC)) info("calculadora-salario.html ausente no repo; paridade funcional pulada");
 else {
   const html = readFileSync(CALC, "utf8");
   const ini = html.indexOf("/* ================= TABELAS EDITÁVEIS");
@@ -420,8 +420,8 @@ console.log("\n== 9. PARSER HOSTIL ==");
 /* ---------- 10. infra ---------- */
 console.log("\n== 10. INFRA ==");
 {
-  const SRV = join(PROJ, "servidor-local.mjs");
-  if (!existsSync(SRV)) info("servidor-local.mjs ausente nesta máquina; guarda de path traversal pulada");
+  const SRV = join(RAIZ, "servidor-local.mjs");
+  if (!existsSync(SRV)) info("servidor-local.mjs ausente no repo; guarda de path traversal pulada");
   else {
     const srv = readFileSync(SRV, "utf8");
     const fonte = srv.match(/function dentroDe[\s\S]*?\n\}/);
@@ -445,8 +445,14 @@ console.log("\n== 10. INFRA ==");
   const ZIP = join(PROJ, "maxbolso-deploy.zip");
   if (!existsSync(ZIP)) info("maxbolso-deploy.zip ausente; comparação de deploy pulada");
   else {
-    const dir = mkdtempSync(join(tmpdir(), "maxbolso-zip-"));
-    const tar = spawnSync("tar", ["-xf", ZIP, "-C", dir]);
+    let dir = mkdtempSync(join(tmpdir(), "maxbolso-zip-"));
+    // o tar do Git Bash (GNU) não lê zip; o do Windows (bsdtar) lê — tenta os dois
+    let tar = spawnSync("tar", ["-xf", ZIP, "-C", dir]);
+    if (tar.status !== 0) {
+      rmSync(dir, { recursive: true, force: true });
+      dir = mkdtempSync(join(tmpdir(), "maxbolso-zip-"));
+      tar = spawnSync("C:\\Windows\\System32\\tar.exe", ["-xf", ZIP, "-C", dir]);
+    }
     if (tar.status !== 0) info("não consegui extrair o zip com tar; comparação pulada");
     else {
       const anda = (d, pre = "") => readdirSync(d).flatMap(f =>

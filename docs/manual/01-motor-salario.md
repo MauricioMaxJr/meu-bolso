@@ -3,8 +3,8 @@
 Fonte no código: `app.js`, bloco `MOTOR DE SALÁRIO` (constantes `INSS_FAIXAS`,
 `TETO_INSS`, `IRRF_FAIXAS`, `FAIXAS_META`, `MESES_ESPECIAIS` e funções
 `calcINSS`, `calcIRRF`, `tipoDoMes`, `faixaDaMeta`, `calculaSalario`).
-A calculadora original (`calculadora-salario.html`, fora do repo) usa as mesmas
-constantes; o `verificar.mjs` confere a paridade automaticamente.
+A calculadora original (`calculadora-salario.html`, na raiz do repo) usa as
+mesmas constantes; o `verificar.mjs` confere a paridade automaticamente.
 
 ## 1. Esquema salarial (regras da empresa, validadas na folha real de 2025)
 
