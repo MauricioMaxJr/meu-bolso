@@ -146,6 +146,20 @@
     return definirTema(tema() === 'dark' ? 'light' : 'dark');
   }
 
+  /* ------------------------------------------------------ o título do app */
+  /* A LOGO é maiúscula (MAXBOLSO); o TÍTULO que o sistema mostra (aba do
+     navegador, app instalado, atalho, manifest) é sutil: MaxBolso, MaxIA,
+     MaxQi... (lei da marca, 04/08/2026). Exceções de grafia ficam AQUI. */
+  var TITULO_EXCECAO = { IA: 'IA', QI: 'Qi' };
+  function tituloDoApp(nome) {
+    var n = String(nome || '').toUpperCase();
+    if (n.indexOf('MAX') !== 0) return nome;
+    var resto = n.slice(3);
+    var grafia = TITULO_EXCECAO[resto] ||
+      (resto.charAt(0) + resto.slice(1).toLowerCase());
+    return 'Max' + grafia;
+  }
+
   /* -------------------------------------------------- o nome com X de ouro */
   /* "MAXBOLSO" -> MA<i class="mx-x-ouro">X</i>BOLSO (só o primeiro X do nome). */
   function nomeComX(nome) {
@@ -231,6 +245,7 @@
     definirTema: definirTema,
     alternarTema: alternarTema,
     nomeComX: nomeComX,
+    tituloDoApp: tituloDoApp,
     logoHtml: logoHtml,
     selo: seloHtml
   };

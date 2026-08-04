@@ -1,7 +1,7 @@
 {
-  "name": "MAXBOLSO",
-  "short_name": "MAXBOLSO",
-  "description": "MAXBOLSO - UM PRODUTO MAXWORKS. App pessoal de finanças: salário, custos, metas e recomendações.",
+  "name": "MaxBolso",
+  "short_name": "MaxBolso",
+  "description": "MaxBolso - UM PRODUTO MAXWORKS. App pessoal de finanças: salário, custos, metas e recomendações.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
