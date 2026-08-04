@@ -1,5 +1,5 @@
 /* MAXBOLSO - service worker: app shell offline (cache-first) */
-const VERSAO = "maxbolso-v14";
+const VERSAO = "maxbolso-v15";
 const ARQUIVOS = [
   "./",
   "./index.html",

@@ -6,8 +6,11 @@
    - Inter 400/600/800 embutida em data-URI (nenhum pedido à internet);
    - caixa alta em toda a interface (.mx-livre libera o texto do dono);
    - números tabulares (coluna de número nunca dança);
-   - ouro RARO: só acento, destaque e selo;
-   - o X de todo nome MAX em foil de ouro (.mx-x-ouro).
+   - o OURO é o acento da casa (ordem do dono): título de seção, botão
+     principal, estado ativo, foco e progresso - sutil, nunca berrante;
+   - o X de todo nome MAX em foil de ouro (.mx-x-ouro);
+   - a logo do app é peça única (.mx-logo): ladrilho + nome + lema, vetorial
+     e alinhada por construção.
    O bloco da Inter é gerado por embutir-fontes.js - não se edita à mão.
    ========================================================================== */
 
@@ -32,6 +35,9 @@
   --ouro: #c9a227;
   --ouro-texto: #7a5d10;
   --ouro-fundo: rgba(201, 162, 39, .13);
+  --ouro-borda: rgba(201, 162, 39, .55);
+  --ouro-claro: #e8cc72;
+  --preto-marca: #101014;
   --ok: #1E7A43;
   --okbg: #E7F1EA;
   --warn: #8A5A00;
@@ -56,6 +62,9 @@
   --ouro: #c9a227;
   --ouro-texto: #e8cc72;
   --ouro-fundo: rgba(201, 162, 39, .16);
+  --ouro-borda: rgba(201, 162, 39, .5);
+  --ouro-claro: #e8cc72;
+  --preto-marca: #101014;
   --ok: #3FAE72;
   --okbg: #16281E;
   --warn: #D9A44A;
@@ -105,7 +114,7 @@ pre, code, kbd, samp {
 }
 .mx-livre ::placeholder { text-transform: none; }
 
-:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--ouro); outline-offset: 2px; }
 [hidden] { display: none !important; }
 a { color: inherit; }
 
@@ -142,7 +151,7 @@ a { color: inherit; }
   justify-content: center;
   cursor: pointer;
 }
-.mx-tema:hover { color: var(--ink); border-color: var(--ink3); }
+.mx-tema:hover { color: var(--ouro-texto); border-color: var(--ouro-borda); }
 .mx-tema svg { width: 17px; height: 17px; display: block; }
 .mx-tema .mx-sol { display: none; }
 [data-theme="dark"] .mx-tema .mx-sol { display: block; }
@@ -156,14 +165,25 @@ a { color: inherit; }
   gap: 8px;
   padding: 18px 12px;
 }
-.mx-assinatura svg { width: 13px; height: 13px; flex: none; display: block; }
+.mx-assinatura svg { width: 16px; height: 16px; flex: none; display: block; }
 .mx-assinatura span {
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 800;
-  letter-spacing: .24em;
-  color: var(--ink3);
+  letter-spacing: .26em;
+  color: var(--ink2);
 }
 .mx-assinatura.mx-filete { border-top: 1px solid var(--line); margin-top: 28px; }
+
+/* ------------------------------------------------------ a logo do app */
+/* Peça única (MAXWORKS.logoHtml injeta o miolo): ladrilho preto com o X de
+   ouro, o nome com o X em foil e o lema do app embaixo. O alinhamento é do
+   kit, nunca do app - ninguém volta a montar logo à mão. */
+.mx-logo { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.mx-logo-icone { width: 40px; height: 40px; flex: none; display: block; }
+.mx-logo-icone svg { width: 100%; height: 100%; display: block; }
+.mx-logo-texto { display: block; min-width: 0; overflow: hidden; }
+.mx-logo-nome { display: block; font-size: 16px; font-weight: 800; letter-spacing: .16em; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mx-logo-lema { display: block; font-size: 8px; font-weight: 700; letter-spacing: .13em; color: var(--ink3); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* -------------------------------------------------------- o esqueleto */
 .mx-wrap { max-width: 860px; margin: 0 auto; padding: 0 28px 48px; }
@@ -182,7 +202,7 @@ a { color: inherit; }
 }
 .mx-volta:hover { border-color: var(--ink3); color: var(--ink); }
 .mx-barra { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 10px; }
-.mx-barra i { display: block; height: 100%; width: 0%; background: var(--acc); transition: width .25s ease; }
+.mx-barra i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #8a6a14, #d9b13c); transition: width .25s ease; }
 
 /* ------------------------------------------------------------- cartão */
 .mx-cartao {
@@ -192,12 +212,13 @@ a { color: inherit; }
   margin: 12px 0;
   overflow: hidden;
 }
+/* Título de seção em ouro (ordem do dono): o realce sutil que assina a casa. */
 .mx-cartao > h3 {
   padding: 12px 16px;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: .14em;
-  color: var(--ink2);
+  color: var(--ouro-texto);
   border-bottom: 1px solid var(--line2);
 }
 .mx-cartao .in { padding: 14px 16px; }
@@ -206,10 +227,12 @@ a { color: inherit; }
 .mx-hero { font-size: 34px; font-weight: 800; color: var(--acc); line-height: 1; }
 
 /* ------------------------------------------------------------ botões */
+/* O botão principal é o ladrilho da marca: preto #101014 com a letra em ouro
+   e um fio de ouro na borda - o mesmo desenho do ícone do app, nos 2 temas. */
 .mx-bt {
-  border: 1px solid var(--acc);
-  background: var(--acc);
-  color: var(--acc-ink);
+  border: 1px solid var(--ouro-borda);
+  background: var(--preto-marca);
+  color: var(--ouro-claro);
   border-radius: 9px;
   padding: 12px 14px;
   font-size: 11px;
@@ -218,6 +241,7 @@ a { color: inherit; }
   cursor: pointer;
   min-height: 44px;
 }
+.mx-bt:hover:not(:disabled):not(.sec):not(.ruim) { border-color: var(--ouro); color: #f7e49a; }
 .mx-bt:active { transform: scale(.99); }
 .mx-bt:disabled { opacity: .4; cursor: default; transform: none; }
 .mx-bt.sec { background: var(--card); color: var(--ink2); border-color: var(--line); }
@@ -245,10 +269,10 @@ a { color: inherit; }
   outline: none;
 }
 .mx-area { min-height: 150px; font-weight: 400; line-height: 1.5; resize: vertical; }
-.mx-input:focus, .mx-area:focus, .mx-select:focus { border-color: var(--ink3); }
+.mx-input:focus, .mx-area:focus, .mx-select:focus { border-color: var(--ouro); }
 .mx-ajuda { display: block; font-size: 10px; font-weight: 600; letter-spacing: .04em; color: var(--ink3); margin-top: 5px; }
 .mx-check { display: inline-flex; align-items: flex-start; gap: 9px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; cursor: pointer; line-height: 1.5; }
-.mx-check input { width: 17px; height: 17px; accent-color: var(--acc); margin-top: 1px; }
+.mx-check input { width: 17px; height: 17px; accent-color: var(--ouro); margin-top: 1px; }
 
 /* ------------------------------------------ lista com ritmo (altura fixa) */
 /* A régua: dentro de uma lista, toda linha tem a MESMA altura - o olho lê em

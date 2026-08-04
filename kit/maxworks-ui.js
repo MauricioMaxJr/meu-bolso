@@ -34,38 +34,55 @@
     { parada: 1, cor: '#c9a227' }
   ];
 
+  /* O foil VIVO: a versao do foil para peca PEQUENA (icone ate 64px, selo).
+     Regra do tamanho optico: encolhido, o stop escuro do foil oficial (#8a6a14)
+     atravessa o meio do X e ele "lava" - vira mancha, parece baixa resolucao.
+     Em miniatura o ouro fica so nos tons claros e o X sai nitido. */
+  var FOIL_VIVO = [
+    { parada: 0, cor: '#f9e7a0' },
+    { parada: .45, cor: '#e3bd4b' },
+    { parada: 1, cor: '#c9a227' }
+  ];
+
   /* O X da marca como caminho vetorial numa caixa 100x100: duas barras cruzadas,
      simétricas por construção, com as pontas cortadas na reta. Vetor puro para
      ficar idêntico em qualquer máquina e continuar limpo em 16 pixels. */
   var X_CAMINHO = 'M22,19 L42.5,19 L50,32.1 L57.5,19 L78,19 L60.25,50 L78,81 ' +
     'L57.5,81 L50,67.9 L42.5,81 L22,81 L39.75,50 Z';
 
-  function gradienteSvg(id) {
-    var paradas = FOIL.map(function (p) {
+  function gradienteSvg(id, paleta) {
+    var paradas = (paleta || FOIL).map(function (p) {
       return '<stop offset="' + p.parada + '" stop-color="' + p.cor + '"/>';
     }).join('');
     return '<linearGradient id="' + id + '" x1="0" y1="0" x2="0.25" y2="1">' + paradas + '</linearGradient>';
   }
 
-  /* O X sozinho, em foil de ouro (selo, carimbo, espaço pequeno). */
-  function xSvg(id) {
+  /* O X sozinho, em foil de ouro. Em peça pequena (selo, carimbo) usa o foil
+     VIVO por padrão: nítido, sem o stop escuro que embaça em miniatura. */
+  function xSvg(id, foilCheio) {
     var g = id || ('mx-foil-' + Math.random().toString(36).slice(2, 8));
     return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-      '<defs>' + gradienteSvg(g) + '</defs>' +
+      '<defs>' + gradienteSvg(g, foilCheio ? FOIL : FOIL_VIVO) + '</defs>' +
       '<path d="' + X_CAMINHO + '" fill="url(#' + g + ')"/></svg>';
   }
 
   /* O ícone de app inteiro (quadrado preto de cantos arredondados + X de ouro),
      no estilo do ícone de iPhone. lado = pixels do arquivo.
      RESPIRO: dentro do ladrilho o X entra a 88 por cento, para não encostar nos
-     cantos arredondados (provado na folha de escalas: 1,00 fica apertado). */
+     cantos arredondados (provado na folha de escalas: 1,00 fica apertado).
+     TAMANHO ÓPTICO: até 64px o foil vira o VIVO (o oficial embaça encolhido).
+     O fio de ouro na borda dá definição ao ladrilho preto sobre fundo escuro
+     e é o toque de luxo da casa - meio pixel, nunca moldura gritada. */
   var RESPIRO_ICONE = .88;
   function iconeSvg(lado) {
     var L = lado || 512;
+    var vivo = L <= 64;
     return '<svg width="' + L + '" height="' + L + '" viewBox="0 0 100 100" ' +
       'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MAXWORKS">' +
-      '<defs>' + gradienteSvg('foil') + '</defs>' +
+      '<defs>' + gradienteSvg('foil', vivo ? FOIL_VIVO : FOIL) + '</defs>' +
       '<rect width="100" height="100" rx="22" ry="22" fill="#101014"/>' +
+      '<rect x="1.1" y="1.1" width="97.8" height="97.8" rx="21" ry="21" fill="none" ' +
+      'stroke="url(#foil)" stroke-width="1.6" opacity=".5"/>' +
       '<g transform="translate(50,50) scale(' + RESPIRO_ICONE + ') translate(-50,-50)">' +
       '<path d="' + X_CAMINHO + '" fill="url(#foil)"/></g></svg>';
   }
@@ -143,6 +160,19 @@
       '<span>UM PRODUTO MAXWORKS</span></div>';
   }
 
+  /* A LOGO DO APP - a peça única do canto do menu: o ladrilho preto com o X de
+     ouro (SVG inline, nítido em qualquer resolução) + o nome com o X em foil +
+     o lema do app embaixo, no tom do MAXIA ("SOLUÇÕES PARA CLAUDE CODE").
+     Alinhamento por construção: uma peça só, ninguém monta à mão. */
+  function logoHtml(nome, lema) {
+    var n = String(nome || 'MAXWORKS').toUpperCase();
+    return '<div class="mx-logo">' +
+      '<span class="mx-logo-icone" aria-hidden="true">' + iconeSvg(40) + '</span>' +
+      '<span class="mx-logo-texto"><span class="mx-logo-nome">' + nomeComX(n) + '</span>' +
+      (lema ? '<span class="mx-logo-lema">' + String(lema).toUpperCase() + '</span>' : '') +
+      '</span></div>';
+  }
+
   /* ------------------------------------------------------- vestir a página */
   /* Injeta o botão de tema (canto superior direito) e o selo do rodapé.
      Nunca duplica: se a página já tem o seu, o kit respeita e não mexe. */
@@ -201,6 +231,7 @@
     definirTema: definirTema,
     alternarTema: alternarTema,
     nomeComX: nomeComX,
+    logoHtml: logoHtml,
     selo: seloHtml
   };
 }));

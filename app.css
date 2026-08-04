@@ -2,7 +2,9 @@
    As cores, a fonte, a caixa alta e o ritmo vêm do kit da marca
    (kit/maxworks-ui.css, carregado antes desta folha). Aqui ficam os
    tokens do app apontando para a paleta MAXWORKS e as peças próprias.
-   Ouro é raro: só o X do nome, o selo, o item aberto do menu e a reserva. */
+   O OURO é o acento da casa (sutil): título de painel, botão principal,
+   cartão destaque, item aberto do menu, foco e barras. Tokens de ouro
+   (--ouro-borda, --ouro-claro, --preto-marca) vêm do kit. */
 
 @font-face {
   font-family: "Inter";
@@ -122,7 +124,7 @@ input, select, textarea {
   background: var(--bg); border: 1px solid var(--border);
   border-radius: 9px; padding: 10px 12px; text-transform: uppercase; letter-spacing: .03em;
 }
-input:focus, select:focus { outline: 2px solid var(--primary-soft); border-color: var(--text-soft); }
+input:focus, select:focus { outline: 2px solid var(--ouro-fundo); border-color: var(--ouro); }
 
 /* ---------- peças da marca MAXWORKS ---------- */
 /* O X de ouro do nome: o foil vem do kit; aqui só o tamanho de cada uso. */
@@ -133,7 +135,7 @@ input:focus, select:focus { outline: 2px solid var(--primary-soft); border-color
   width: 34px; height: 34px; border-radius: 9px;
   border: 1px solid var(--border); background: var(--surface); color: var(--text-soft);
 }
-.topbar .mx-tema:hover { color: var(--text); border-color: var(--text-soft); }
+.topbar .mx-tema:hover { color: var(--ouro-texto); border-color: var(--ouro-borda); }
 /* Selo do rodapé: acompanha a largura do conteúdo. */
 #rodape-marca .mx-assinatura { max-width: 860px; margin: 28px auto 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
 
@@ -153,17 +155,10 @@ span.inline-ic { display: inline-flex; vertical-align: middle; }
   padding: 16px 12px calc(14px + env(safe-area-inset-bottom));
   z-index: 40;
 }
-.brand {
-  display: flex; align-items: center; gap: 10px;
-  font-weight: 800; font-size: 15px; letter-spacing: .14em;
-  padding: 4px 8px 16px;
-}
-.brand-logo {
-  width: 34px; height: 34px; flex: none;
-  display: inline-flex; align-items: center; justify-content: center;
-}
-.brand-logo svg { width: 34px; height: 34px; display: block; }
-.brand-nome { line-height: 1; }
+/* A logo é a peça única do kit (.mx-logo, injetada por MAXWORKS.logoHtml):
+   ladrilho + nome + lema, alinhada e nítida por construção. */
+.brand { padding: 4px 6px 18px; }
+.brand .mx-logo-nome { font-size: 15px; }
 .nav-lateral { display: flex; flex-direction: column; gap: 3px; flex: 1; }
 .nav-lateral button {
   display: flex; align-items: center; gap: 12px;
@@ -176,7 +171,7 @@ span.inline-ic { display: inline-flex; vertical-align: middle; }
 .nav-lateral button .ic { width: 20px; height: 20px; }
 .nav-lateral button:hover { background: var(--strip); color: var(--text); }
 .nav-lateral button.ativo {
-  background: var(--primary-soft); color: var(--text);
+  background: var(--ouro-fundo); color: var(--ouro-texto);
   font-weight: 800; border-left-color: var(--ouro);
 }
 .overlay {
@@ -201,7 +196,7 @@ span.inline-ic { display: inline-flex; vertical-align: middle; }
   width: 34px; height: 34px; flex: none; cursor: pointer; color: var(--text);
   display: inline-flex; align-items: center; justify-content: center;
 }
-.icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+.icon-btn:hover { border-color: var(--ouro-borda); color: var(--ouro-texto); }
 .icon-btn .ic { width: 17px; height: 17px; }
 .btn-menu { display: none; }
 .titulo-tela { font-weight: 800; font-size: 14px; letter-spacing: .12em; }
@@ -228,9 +223,9 @@ main { max-width: 860px; width: 100%; margin: 0 auto; padding: 18px; }
 }
 .panel > h2, .panel-head h2 {
   font-size: 11px; font-weight: 800; letter-spacing: .14em;
-  color: var(--text-soft); display: flex; align-items: center; gap: 9px;
+  color: var(--ouro-texto); display: flex; align-items: center; gap: 9px;
 }
-.panel > h2 .ic, .panel-head h2 .ic { color: var(--text-soft); width: 17px; height: 17px; }
+.panel > h2 .ic, .panel-head h2 .ic { color: var(--ouro-texto); width: 17px; height: 17px; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .panel-head h2 { margin: 0; padding: 0; background: none; border: none; }
 .soft { color: var(--text-soft); font-size: 12px; font-weight: 500; margin-bottom: 12px; letter-spacing: .02em; }
@@ -247,9 +242,10 @@ main { max-width: 860px; width: 100%; margin: 0 auto; padding: 18px; }
   font-variant-numeric: tabular-nums; overflow-wrap: break-word;
 }
 .card .sub { font-size: 10px; font-weight: 600; color: var(--text-soft); margin-top: 2px; }
-.card.destaque { background: var(--primary); border-color: var(--primary); }
-.card.destaque .label, .card.destaque .sub { color: var(--primary-ink); opacity: .74; }
-.card.destaque .value { color: var(--primary-ink); }
+/* O cartão destaque é o ladrilho da marca: preto, fio de ouro, número em ouro. */
+.card.destaque { background: var(--preto-marca); border-color: var(--ouro-borda); }
+.card.destaque .label, .card.destaque .sub { color: #a6a5ae; opacity: 1; }
+.card.destaque .value { color: var(--ouro-claro); }
 .card .value.neg { color: var(--danger); }
 
 /* stat tiles */
@@ -315,7 +311,7 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 .form-grid label { font-size: 10px; font-weight: 800; color: var(--text-soft); display: block; letter-spacing: .12em; }
 .form-grid input, .form-grid select { width: 100%; margin-top: 5px; }
 .check-row { display: flex; align-items: center; gap: 9px; font-size: 12px !important; color: var(--text) !important; }
-.check-row input { width: 17px; height: 17px; margin: 0; accent-color: var(--primary); }
+.check-row input { width: 17px; height: 17px; margin: 0; accent-color: var(--ouro); }
 
 .btn {
   border: 1px solid var(--border); background: var(--surface); color: var(--text-soft);
@@ -324,8 +320,8 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
   transition: border-color .12s, color .12s, opacity .12s;
 }
 .btn:hover { border-color: var(--text-soft); color: var(--text); }
-.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
-.btn.primary:hover { opacity: .86; color: var(--primary-ink); border-color: var(--primary); }
+.btn.primary { background: var(--preto-marca); border-color: var(--ouro-borda); color: var(--ouro-claro); }
+.btn.primary:hover { opacity: 1; color: #f7e49a; border-color: var(--ouro); }
 .btn.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
@@ -337,7 +333,7 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 /* ---------- barras ---------- */
 .barra-wrap { margin-top: 12px; }
 .barra { height: 9px; border-radius: 999px; background: var(--strip); overflow: hidden; border: 1px solid var(--border); }
-.barra > div { height: 100%; border-radius: 999px; background: var(--primary); }
+.barra > div { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #8a6a14, #d9b13c); }
 .barra > div.estouro { background: var(--danger); }
 .barra-leg { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: var(--text-soft); margin-top: 5px; letter-spacing: .3px; }
 
@@ -378,11 +374,11 @@ input.chk-pago { width: 18px; height: 18px; accent-color: var(--positivo); flex:
 .gravar-area { text-align: center; padding: 6px 0 2px; }
 .btn-gravar {
   display: inline-flex; align-items: center; gap: 9px;
-  background: var(--primary); color: var(--primary-ink); border: 1px solid var(--primary); cursor: pointer;
+  background: var(--preto-marca); color: var(--ouro-claro); border: 1px solid var(--ouro-borda); cursor: pointer;
   font-size: 13px; font-weight: 800; padding: 14px 34px; border-radius: 999px;
   letter-spacing: .1em;
 }
-.btn-gravar:hover { opacity: .86; }
+.btn-gravar:hover { color: #f7e49a; border-color: var(--ouro); }
 .btn-gravar .ic { width: 18px; height: 18px; }
 .btn-gravar.reabrir { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 .btn-gravar.reabrir:hover { border-color: var(--text-soft); color: var(--text); opacity: 1; }
@@ -443,7 +439,7 @@ dialog form { padding: 18px; }
 dialog h3 {
   margin: -18px -18px 16px; padding: 12px 16px;
   background: none; border-bottom: 1px solid var(--line2);
-  font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--text-soft);
+  font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--ouro-texto);
 }
 dialog .btn-row { justify-content: flex-end; margin-top: 18px; }
 dialog .btn-row .btn.danger { margin-right: auto; }

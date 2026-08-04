@@ -1786,9 +1786,9 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 
 /* ================= START ================= */
 document.querySelectorAll("[data-ic]").forEach(e => e.insertAdjacentHTML("afterbegin", ico(e.dataset.ic)));
-if (window.MAXWORKS) { // a marca: o X de ouro no canto do menu e o selo da casa no rodapé
-  const marca = document.getElementById("brand-mark");
-  if (marca) marca.innerHTML = MAXWORKS.iconeSvg(34);
+if (window.MAXWORKS) { // a marca: a logo única do kit no canto do menu e o selo da casa no rodapé
+  const marca = document.getElementById("brand-area");
+  if (marca) marca.innerHTML = MAXWORKS.logoHtml("MAXBOLSO", "SOLUÇÕES PARA O BOLSO");
   const rodape = document.getElementById("rodape-marca");
   if (rodape) rodape.innerHTML = MAXWORKS.selo();
 }
