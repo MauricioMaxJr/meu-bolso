@@ -50,9 +50,17 @@ entrega termina com `node verificar.mjs` VERDE + teste real no navegador.
       estimado por faixa e regras), tudo gerado das constantes do motor
       (capítulo 12).
 - [x] Plano de continuidade sem GitHub documentado (capítulo 08, seção 7).
-- [x] **Arquivo único** `meu-bolso.html` (gerador `app/gerar-html-unico.mjs`):
+- [x] **Arquivo único** `maxbolso.html` (gerador `app/gerar-html-unico.mjs`):
       o app inteiro num arquivo para compartilhar sem site (capítulo 08,
       seção 8); a auditoria acusa quando fica defasado.
+
+## Feito (v1.4.0, 04/08/2026)
+
+- [x] **Identidade MAXWORKS**: o app é o MAXBOLSO, com o X de ouro no nome, o
+      ícone de app preto com o X (aba, atalho e tela de início do celular), a
+      paleta clara e escura da marca, a Inter do kit, o botão único de tema no
+      canto superior direito e o selo UM PRODUTO MAXWORKS no rodapé. O dado do
+      dono atravessa inteiro (chave nova lê a antiga).
 
 ## Próximos (em ordem)
 

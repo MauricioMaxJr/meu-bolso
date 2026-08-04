@@ -1,6 +1,8 @@
-# MEU BOLSO: VISÃO DO PRODUTO
+# MAXBOLSO: VISÃO DO PRODUTO
 
-App pessoal de finanças do Mauricio, em formato PWA, 100% offline e privado:
+App pessoal de finanças do Mauricio, em formato PWA, 100% offline e privado,
+assinado pela MAXWORKS (o X de ouro no nome, o ícone preto com o X e o selo
+UM PRODUTO MAXWORKS no rodapé):
 nenhum dado sai do aparelho (tudo em localStorage). Foi construído em cima do
 esquema salarial real dele (base fixa por tempo de função + prêmio por meta) e
 responde três perguntas todo mês:
@@ -28,6 +30,7 @@ O ciclo de uso: registrar o salário do mês, lançar custos, aportar nas metas 
 | Mapa (consultor de previsibilidade) | Pronto | [manual/10-mapa-consultor.md](manual/10-mapa-consultor.md) |
 | Expansões v1.2 (guardião, extrato, avisos, colchão, 13º, aprendizado, vigia, planilha) | Pronto | [manual/11-expansoes-v1-2.md](manual/11-expansoes-v1-2.md) |
 | Tela Esquema (régua salarial explicada) | Pronto | [manual/12-esquema.md](manual/12-esquema.md) |
+| Identidade MAXWORKS (marca, tema claro e escuro, ícone de app, selo) | Pronto (kit em `kit/`) | [manual/08-dados-backup-pwa.md](manual/08-dados-backup-pwa.md) |
 
 ## Contratos e ordem de trabalho
 

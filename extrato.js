@@ -1,4 +1,4 @@
-/* Meu Bolso - leitor de extrato bancário (OFX e CSV), 100% local.
+/* MAXBOLSO - leitor de extrato bancário (OFX e CSV), 100% local.
    O arquivo não é guardado: vira transações {data:"AAAA-MM-DD", desc, valor} e morre.
    valor negativo = débito (vira gasto na importação); positivo = crédito (ignorado). */
 (function () {

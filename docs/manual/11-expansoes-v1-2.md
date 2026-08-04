@@ -7,11 +7,14 @@ As oito mecânicas aprovadas pelo Mauricio a partir de `docs/AUDITORIA-2026-07.m
 
 - Em Configurações > Backup, o botão **PASTA DO GUARDIÃO** abre o seletor de
   pasta do navegador (`showDirectoryPicker`, modo leitura e escrita). O handle
-  da pasta fica num IndexedDB próprio (`meubolso-guardiao`), porque handle não
-  cabe no localStorage.
+  da pasta fica num IndexedDB próprio (`maxbolso-guardiao`), porque handle não
+  cabe no localStorage. Se a pasta tiver sido escolhida sob o nome anterior
+  (`meubolso-guardiao`), o app traz esse acesso para o banco novo sozinho, sem
+  pedir a pasta de novo.
 - A cada **mês gravado** (e ao escolher a pasta), o app grava sozinho
-  `meubolso-backup-AAAA-MM-DD.json` (estado completo, mesmo formato do export
-  manual) e apaga as cópias mais antigas, mantendo as **últimas 6**.
+  `maxbolso-backup-AAAA-MM-DD.json` (estado completo, mesmo formato do export
+  manual) e apaga as cópias mais antigas, mantendo as **últimas 6** (as cópias
+  gravadas com o nome anterior contam no mesmo rodízio, pela data).
 - A linha de status sob os botões mostra: navegador sem suporte / convite para
   escolher a pasta / "Guardião ativo. Última cópia: <nome>"
   (`config.guardiaoUltimo`).

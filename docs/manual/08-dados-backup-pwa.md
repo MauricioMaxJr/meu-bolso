@@ -5,8 +5,9 @@ handlers de backup) e `sw.js`, `manifest.webmanifest`, `icons.js`.
 
 ## 1. Estado (`S`) e persistência
 
-Chave única do localStorage: `meubolso.v1`. Salvo integralmente a cada ação
-(`salvar()`). Esquema versão 2:
+Chave única do localStorage: `maxbolso.v1`. Se ela ainda não existir, o app lê
+`meubolso.v1` e passa a gravar na chave nova: nada do que está no aparelho se
+perde. Salvo integralmente a cada ação (`salvar()`). Esquema versão 2:
 
 ```
 {
@@ -47,7 +48,7 @@ Estado corrompido no load: console.warn e recomeço no default (sem crash).
 ## 3. Backup e exportação (tela Configurações)
 
 - **Exportar backup**: download do JSON completo
-  (`meubolso-backup-AAAA-MM.json`).
+  (`maxbolso-backup-AAAA-MM.json`).
 - **Importar backup**: valida version 1 ou 2 + presença de config e categorias;
   confirma ("SUBSTITUI os dados"); roda `migrar` e re-renderiza. Arquivo
   inválido: alerta com o motivo, estado intacto.
@@ -59,14 +60,21 @@ Estado corrompido no load: console.warn e recomeço no default (sem crash).
 ## 4. Tema
 
 `config.tema`: "claro" ou "escuro". O valor "auto" é resolvido UMA vez pelo
-sistema (prefers-color-scheme) e persistido; o botão da topbar alterna e o CSS
-cobre os dois temas + fallback por media query.
+sistema (prefers-color-scheme) e persistido. O kit da marca
+(`kit/maxworks-ui.js`) pinta a página antes de tudo, pelo atributo
+`data-theme` no html ("light" ou "dark"), e guarda a escolha na chave
+`maxworks-tema`; o botão único da topbar (lua no claro, sol no escuro)
+alterna, e o CSS cobre os dois temas + fallback por media query.
 
 ## 5. PWA
 
-- `manifest.webmanifest`: standalone, pt-BR, ícones 192/512 (maskable) e
-  apple-touch-icon; tema azul #17548a.
-- `sw.js`: pré-cache do app shell (10 arquivos) na instalação;
+- `manifest.webmanifest`: standalone, pt-BR, nome MAXBOLSO, ícones 192/512
+  (maskable) e apple-touch-icon; fundo e tema no preto da marca #101014.
+- Ícone de app no estilo do ícone de iPhone: quadrado de cantos arredondados,
+  fundo preto e o X de ouro MAXWORKS centrado (`icons/`, mais o
+  `icons/favicon.svg` da aba). Gerado por
+  `orquestrador-universal/marca/kit-visual/gerar-icone-app.js`.
+- `sw.js`: pré-cache do app shell (15 arquivos, o kit da marca junto) na instalação;
   **navegação: rede primeiro** (abrir o app nunca depende do cache; cache é
   reserva offline); demais arquivos: cache primeiro com preenchimento em
   runtime (só same-origin). `skipWaiting` + `clients.claim`.
@@ -92,7 +100,7 @@ O GitHub é só uma CÓPIA do código e uma hospedagem, nunca a fonte de nada:
   fora do ar.
 - **O código completo**, com todo o histórico git, vive em
   `E:\Projetos\salario-azzas\app` e em qualquer clone (ex.: o notebook). O
-  `meubolso-deploy.zip` na raiz do projeto é uma cópia pronta para hospedar.
+  `maxbolso-deploy.zip` na raiz do projeto é uma cópia pronta para hospedar.
 - **Para voltar ao ar**: (a) local, sem internet nenhuma: `node
   servidor-local.mjs` na raiz do projeto e abrir http://localhost:8321;
   (b) novo remoto: criar repositório em qualquer serviço e rodar
@@ -101,11 +109,11 @@ O GitHub é só uma CÓPIA do código e uma hospedagem, nunca a fonte de nada:
 - **Recomendado ao dono**: manter uma cópia da pasta `E:\Projetos\salario-azzas`
   no mesmo dispositivo de backup dos holerites.
 
-## 8. Versão em arquivo único (meu-bolso.html)
+## 8. Versão em arquivo único (maxbolso.html)
 
 `node app/gerar-html-unico.mjs` empacota o app INTEIRO num só arquivo na raiz
-do projeto: CSS, os 4 scripts e a fonte Inter (data URI) embutidos, sem
-manifest e sem service worker. Serve para mandar o app a alguém por WhatsApp,
+do projeto: as 2 folhas de estilo, os 5 scripts e a fonte Inter (data URI)
+embutidos, sem manifest e sem service worker. Serve para mandar o app a alguém por WhatsApp,
 e-mail ou pendrive: a pessoa abre com dois cliques, sem site e sem internet.
 
 Regras e limites:

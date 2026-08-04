@@ -1,4 +1,4 @@
-# AUDITORIA 2026-07 - Meu Bolso v1.1.1
+# AUDITORIA 2026-07 - MAXBOLSO v1.1.1
 
 Auditoria de lançamento executada em 27/07/2026 (skill /auditar). Método desta rodada:
 caça multiagente parcial (3 frentes concluídas antes do limite: motor, mercado BR,

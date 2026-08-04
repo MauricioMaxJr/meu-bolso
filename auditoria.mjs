@@ -305,7 +305,9 @@ console.log("\n== 6. PADRÃO VISUAL (regras do dono) ==");
 console.log("\n== 7. CSS ==");
 {
   const definidas = new Set();
-  for (const bloco of appcss.split("}")) {
+  // o app veste duas folhas: a do kit da marca (peças .mx-*) e a própria
+  const kitcss = existsSync(join(RAIZ, "kit", "maxworks-ui.css")) ? ler("kit/maxworks-ui.css") : "";
+  for (const bloco of (appcss + kitcss).split("}")) {
     const sel = bloco.split("{")[0] || "";
     for (const m of sel.matchAll(/\.([a-zA-Z][\w-]*)/g)) definidas.add(m[1]);
   }
@@ -440,10 +442,10 @@ console.log("\n== 10. INFRA ==");
     }
   }
 
-  const ZIP = join(PROJ, "meubolso-deploy.zip");
-  if (!existsSync(ZIP)) info("meubolso-deploy.zip ausente; comparação de deploy pulada");
+  const ZIP = join(PROJ, "maxbolso-deploy.zip");
+  if (!existsSync(ZIP)) info("maxbolso-deploy.zip ausente; comparação de deploy pulada");
   else {
-    const dir = mkdtempSync(join(tmpdir(), "meubolso-zip-"));
+    const dir = mkdtempSync(join(tmpdir(), "maxbolso-zip-"));
     const tar = spawnSync("tar", ["-xf", ZIP, "-C", dir]);
     if (tar.status !== 0) info("não consegui extrair o zip com tar; comparação pulada");
     else {
@@ -464,16 +466,16 @@ console.log("\n== 10. INFRA ==");
     }
   }
 
-  const HTMLU = join(PROJ, "meu-bolso.html");
-  if (!existsSync(HTMLU)) info("meu-bolso.html (arquivo único) ausente; gere com: node app/gerar-html-unico.mjs");
+  const HTMLU = join(PROJ, "maxbolso.html");
+  if (!existsSync(HTMLU)) info("maxbolso.html (arquivo único) ausente; gere com: node app/gerar-html-unico.mjs");
   else {
     const h = createHash("sha256");
-    for (const f of ["index.html", "app.css", "app.js", "icons.js", "holerite.js", "extrato.js"]) h.update(readFileSync(join(RAIZ, f)));
+    for (const f of ["index.html", "kit/maxworks-ui.css", "kit/maxworks-ui.js", "app.css", "app.js", "icons.js", "holerite.js", "extrato.js"]) h.update(readFileSync(join(RAIZ, f)));
     h.update(readFileSync(join(RAIZ, "fonts/InterVariable.woff2")));
     const m = readFileSync(HTMLU, "utf8").match(/marca:([0-9a-f]{16})/);
     (m && m[1] === h.digest("hex").slice(0, 16))
-      ? ok("meu-bolso.html (arquivo único) gerado dos assets atuais")
-      : erro("meu-bolso.html DESATUALIZADO - regerar: node app/gerar-html-unico.mjs");
+      ? ok("maxbolso.html (arquivo único) gerado dos assets atuais")
+      : erro("maxbolso.html DESATUALIZADO - regerar: node app/gerar-html-unico.mjs");
   }
 
   const hooks = spawnSync("git", ["-C", RAIZ, "config", "core.hooksPath"], { encoding: "utf8" }).stdout.trim();

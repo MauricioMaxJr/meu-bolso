@@ -1,8 +1,10 @@
-/* Meu Bolso — service worker: app shell offline (cache-first) */
-const VERSAO = "meubolso-v13";
+/* MAXBOLSO - service worker: app shell offline (cache-first) */
+const VERSAO = "maxbolso-v14";
 const ARQUIVOS = [
   "./",
   "./index.html",
+  "./kit/maxworks-ui.css",
+  "./kit/maxworks-ui.js",
   "./app.css",
   "./app.js",
   "./icons.js",
@@ -10,6 +12,7 @@ const ARQUIVOS = [
   "./extrato.js",
   "./fonts/InterVariable.woff2",
   "./manifest.webmanifest",
+  "./icons/favicon.svg",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",

@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================
-   Meu Bolso - app pessoal de finanças
+   MAXBOLSO - app pessoal de finanças (um produto MAXWORKS)
    Dados 100% locais (localStorage). Ícones: Phosphor duotone (MIT).
    Manual completo do produto: docs/ (fonte da verdade: este código).
    ============================================================ */
@@ -44,7 +44,9 @@ const MESES_ESPECIAIS = [6, 8, 11];
 
 const round2 = v => Math.round(v * 100) / 100;
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const fmt = v => brl.format(round2(v || 0));
+// espaço comum entre R$ e o número: em caixa estreita a quebra cai entre os dois,
+// nunca no meio do número (o espaço fixo do Intl obrigava a rachar o valor)
+const fmt = v => brl.format(round2(v || 0)).replace(/[\u00A0\u202F]/g, " ");
 
 function calcINSS(bruto) {
   let inss = 0, piso = 0;
@@ -101,7 +103,8 @@ const EMOJI_MAP = { "🏠":"house","🛒":"shopping-cart","⚡":"zap","🚗":"ca
   "💍":"gift","🏋️":"dumbbell","⚽":"dumbbell","🎸":"gamepad-2","🖥️":"laptop","👶":"baby" };
 
 /* ================= ESTADO ================= */
-const LS_KEY = "meubolso.v1";
+const LS_KEY = "maxbolso.v1";
+const LS_KEY_ANTERIOR = "meubolso.v1"; // dado gravado antes do nome MAXBOLSO: lido e trazido inteiro
 const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
 
 function categoriasDefault() {
@@ -200,7 +203,7 @@ function migrar(st) {
 let S = carregar();
 function carregar() {
   try {
-    const raw = localStorage.getItem(LS_KEY);
+    const raw = localStorage.getItem(LS_KEY) || localStorage.getItem(LS_KEY_ANTERIOR);
     if (raw) {
       const st = JSON.parse(raw);
       if (st && (st.version === 1 || st.version === 2)) {
@@ -221,16 +224,21 @@ function carregar() {
 }
 function salvar() { localStorage.setItem(LS_KEY, JSON.stringify(S)); }
 
-/* ================= TEMA ================= */
+/* ================= TEMA =================
+   Claro e escuro no padrão da casa MAXWORKS: o kit pinta a página antes de
+   tudo (data-theme no html, escolha guardada por ele) e guarda a lua e o sol
+   do botão. Aqui a gente só resolve o "auto" uma vez e manda o kit aplicar. */
 function aplicarTema() {
   let t = S.config.tema;
   if (t !== "claro" && t !== "escuro") { // resolve "auto" uma única vez pelo sistema
     t = matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
     S.config.tema = t; salvar();
   }
-  document.documentElement.dataset.theme = t;
+  const alvo = t === "escuro" ? "dark" : "light";
+  if (window.MAXWORKS) MAXWORKS.definirTema(alvo);
+  else document.documentElement.dataset.theme = alvo;
   const btn = document.getElementById("btn-tema");
-  if (btn) btn.innerHTML = ico(t === "escuro" ? "moon" : "sun");
+  if (btn && !btn.firstChild && window.MAXWORKS) btn.innerHTML = MAXWORKS.svgTema;
 }
 
 /* ================= MESES ================= */
@@ -1196,10 +1204,12 @@ function aprender(desc, catId) { // descrição repetida lembra a categoria
 }
 
 /* ---------- Backup Guardião (cópia automática em pasta local) ---------- */
-function idbGuardiao(modo, valor) { // o handle da pasta não cabe no localStorage
+const IDB_GUARDIAO = "maxbolso-guardiao";
+const IDB_GUARDIAO_ANTERIOR = "meubolso-guardiao"; // pasta escolhida antes do nome novo
+function idbGuardiao(modo, valor, banco) { // o handle da pasta não cabe no localStorage
   return new Promise(res => {
     try {
-      const req = indexedDB.open("meubolso-guardiao", 1);
+      const req = indexedDB.open(banco || IDB_GUARDIAO, 1);
       req.onupgradeneeded = () => req.result.createObjectStore("h");
       req.onerror = () => res(null);
       req.onsuccess = () => {
@@ -1211,21 +1221,29 @@ function idbGuardiao(modo, valor) { // o handle da pasta não cabe no localStora
     } catch { res(null); }
   });
 }
-async function guardiaoSalvar(origem) {
+async function guardiaoPasta() { // a pasta escolhida antes continua valendo: traz o acesso para o nome novo
   const pasta = await idbGuardiao("ler");
+  if (pasta) return pasta;
+  const anterior = await idbGuardiao("ler", null, IDB_GUARDIAO_ANTERIOR);
+  if (anterior) await idbGuardiao("gravar", anterior);
+  return anterior;
+}
+async function guardiaoSalvar(origem) {
+  const pasta = await guardiaoPasta();
   if (!pasta) return;
   try {
     if (await pasta.queryPermission({ mode: "readwrite" }) !== "granted" &&
         await pasta.requestPermission({ mode: "readwrite" }) !== "granted") return;
     const d = new Date();
-    const nome = "meubolso-backup-" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".json";
+    const nome = "maxbolso-backup-" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".json";
     const arq = await pasta.getFileHandle(nome, { create: true });
     const w = await arq.createWritable();
     await w.write(JSON.stringify(S, null, 1)); await w.close();
-    const copias = [];
+    const copias = []; // as cópias gravadas com o nome anterior contam no rodízio
     for await (const [n] of pasta.entries())
-      if (/^meubolso-backup-\d{4}-\d{2}-\d{2}\.json$/.test(n)) copias.push(n);
-    for (const n of copias.sort().slice(0, Math.max(0, copias.length - 6))) await pasta.removeEntry(n); // guarda as últimas 6
+      if (/^(maxbolso|meubolso)-backup-\d{4}-\d{2}-\d{2}\.json$/.test(n)) copias.push(n);
+    copias.sort((a, b) => a.slice(-15).localeCompare(b.slice(-15))); // pela data, não pelo nome
+    for (const n of copias.slice(0, Math.max(0, copias.length - 6))) await pasta.removeEntry(n); // guarda as últimas 6
     S.config.guardiaoUltimo = nome; salvar();
     if (origem === "botao") { render(); toast("Backup guardado na pasta."); }
   } catch { if (origem === "botao") toast("Não consegui gravar na pasta do guardião."); }
@@ -1244,8 +1262,8 @@ async function avisarVencimentos(forcar = false) {
     (pend.length > 3 ? " E MAIS " + (pend.length - 3) : "");
   try {
     const reg = await navigator.serviceWorker.getRegistration();
-    if (reg && reg.showNotification) reg.showNotification("MEU BOLSO: CONTAS A PAGAR", { body: corpo, icon: "icons/icon-192.png" });
-    else new Notification("MEU BOLSO: CONTAS A PAGAR", { body: corpo, icon: "icons/icon-192.png" });
+    if (reg && reg.showNotification) reg.showNotification("MAXBOLSO: CONTAS A PAGAR", { body: corpo, icon: "icons/icon-192.png" });
+    else new Notification("MAXBOLSO: CONTAS A PAGAR", { body: corpo, icon: "icons/icon-192.png" });
   } catch {}
 }
 
@@ -1689,7 +1707,7 @@ $("#btn-export").onclick = () => {
   const blob = new Blob([JSON.stringify(S, null, 1)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "meubolso-backup-" + chaveHoje() + ".json";
+  a.download = "maxbolso-backup-" + chaveHoje() + ".json";
   a.click(); URL.revokeObjectURL(a.href);
 };
 $("#btn-csv").onclick = () => {
@@ -1703,7 +1721,7 @@ $("#btn-csv").onclick = () => {
   });
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "meubolso-meses.csv"; a.click();
+  a.href = URL.createObjectURL(blob); a.download = "maxbolso-meses.csv"; a.click();
   URL.revokeObjectURL(a.href);
 };
 $("#btn-import").onclick = () => $("#file-import").click();
@@ -1739,7 +1757,7 @@ $("#btn-csv-detalhado").onclick = () => {
   });
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "meubolso-detalhado.csv"; a.click();
+  a.href = URL.createObjectURL(blob); a.download = "maxbolso-detalhado.csv"; a.click();
   URL.revokeObjectURL(a.href);
 };
 $("#btn-guardiao").onclick = async () => {
@@ -1768,6 +1786,12 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 
 /* ================= START ================= */
 document.querySelectorAll("[data-ic]").forEach(e => e.insertAdjacentHTML("afterbegin", ico(e.dataset.ic)));
+if (window.MAXWORKS) { // a marca: o X de ouro no canto do menu e o selo da casa no rodapé
+  const marca = document.getElementById("brand-mark");
+  if (marca) marca.innerHTML = MAXWORKS.iconeSvg(34);
+  const rodape = document.getElementById("rodape-marca");
+  if (rodape) rodape.innerHTML = MAXWORKS.selo();
+}
 aplicarTema();
 salvar(); // persiste migração, se houve
 render();

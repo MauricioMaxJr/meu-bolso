@@ -1,4 +1,4 @@
-# PARIDADE: calculadora-salario.html × app (Meu Bolso)
+# PARIDADE: calculadora-salario.html × app (MAXBOLSO)
 
 Contrato de fidelidade entre a calculadora original (fonte:
 `E:\Projetos\salario-azzas\calculadora-salario.html`, fora do repo) e o app.

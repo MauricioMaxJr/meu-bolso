@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   VERIFICAR — auditoria mecânica do Meu Bolso num comando.
+   VERIFICAR — auditoria mecânica do MAXBOLSO num comando.
    Uso:  node verificar.mjs           -> VERDE (exit 0) ou VERMELHO (exit 1)
          node verificar.mjs --selar   -> regrava docs/canonicos.json a partir
                                          do código (use SÓ após mudança
@@ -78,7 +78,8 @@ mono ? ok("prêmios monotônicos nas 3 colunas") : erro("tabela de prêmios NÃO
 /* ---------- 2. livro-razão ---------- */
 console.log("\n== 2. LIVRO-RAZÃO (canonicos.json) ==");
 const hashAssets = createHash("sha256");
-for (const f of ["index.html", "app.js", "app.css", "icons.js", "holerite.js", "extrato.js", "sw.js", "manifest.webmanifest"])
+for (const f of ["index.html", "app.js", "app.css", "icons.js", "holerite.js", "extrato.js", "sw.js",
+                 "manifest.webmanifest", "kit/maxworks-ui.css", "kit/maxworks-ui.js"])
   hashAssets.update(readFileSync(join(RAIZ, f)));
 const derivado = {
   aviso: "GERADO por verificar.mjs --selar. NÃO editar na mão: é derivado do código.",
