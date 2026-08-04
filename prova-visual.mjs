@@ -249,7 +249,7 @@ async function main() {
     const { pagina, problemas } = await abrir({ dados: null, chaveDado: "maxbolso.v1" });
     for (const tema of ["claro", "escuro"]) {
       if (tema === "escuro") await pagina.click("#btn-tema");
-      for (const t of ["inicio", "metas", "contas", "relatorios", "mapa"]) {
+      for (const t of ["inicio", "renda", "metas", "contas", "relatorios", "mapa"]) {
         await pagina.evaluate(n => trocaTela(n), t);
         await foto(pagina, `vazio-${tema}-${t}`);
         await varrer(pagina, `vazio-${tema}/${t}`);
